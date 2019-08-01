@@ -1,0 +1,2 @@
+QPushButton#MenuButton { background-color: #54d0d9; font-size: 26px; font: bold;}
+QLabel#MenuLabel { font-size: 32px; font: bold; text-align: center;}
