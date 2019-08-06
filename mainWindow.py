@@ -33,9 +33,19 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.infoWidget = InfoWidget(size.width()*0.6, size.height()*0.8)
         self.paramsWidget = ParamsWidget(size.width()*0.6, size.height()*0.8)
 
+        #Creating stacked widget
+        self.stack = QtWidgets.QStackedWidget()
+        self.stack.addWidget(self.menuWidget)
+        self.stack.addWidget(self.playerWidget)
+        self.stack.addWidget(self.scoreWidget)
+        self.stack.addWidget(self.infoWidget)
+        self.stack.addWidget(self.paramsWidget)
+        self.stack.setCurrentIndex(0)
+
         #initialization
         self.setWindowTitle( "System rekomendujący muzykę" )
-        self.setCentralWidget(self.menuWidget)
+        self.setWindowIcon(QtGui.QIcon("./data/icons/mainWindowIcon.png"))
+        self.setCentralWidget(self.stack)
 
     def loadStyleSheet(self):
         with open ("styleSheet.txt", "r") as stylesFile:
@@ -47,20 +57,22 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         #TODO
         pass
 
-    def startRecomendation(self):
-        self.setCentralWidget(self.playerWidget)
-
-    def showParams(self):
-        self.setCentralWidget(self.paramsWidget)
-
-    def showInfo(self):
-        self.setCentralWidget(self.infoWidget)
-
-    def showScore(self):
-        self.setCentralWidget(self.scoreWidget)
 
     def showMenu(self):
-        self.setCentralWidget(self.menuWidget)
+        self.stack.setCurrentIndex(0)
+
+    def startRecomendation(self):
+        self.stack.setCurrentIndex(1)
+
+    def showScore(self):
+        self.stack.setCurrentIndex(2)
+
+    def showInfo(self):
+        self.stack.setCurrentIndex(3)
+
+    def showParams(self):
+        self.stack.setCurrentIndex(4)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

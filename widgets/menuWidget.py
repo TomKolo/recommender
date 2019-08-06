@@ -52,4 +52,4 @@ class MenuWidget(QtWidgets.QWidget):
         self.window().showParams()
 
     def showInfo(self):
-        pass
+        self.window().showInfo()
