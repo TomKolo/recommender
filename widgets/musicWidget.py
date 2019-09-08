@@ -8,6 +8,10 @@ class MusicWidget(QtWidgets.QWidget):
         self.UNHAPPY_WITH_SONG = 0
         self.HAPPY_WITH_SONG = 1
         self.UNSELECTED = -1
+        self.HAPPY_SELECTED_ICON = "./data/icons/smilingFaceSelected.png"
+        self.HAPPY_UNSELECTED_ICON = "./data/icons/smilingFace.png"
+        self.SAD_SELECTED_ICON = "./data/icons/sadFaceSelected.png"
+        self.SAD_UNSELECTED_ICON = "./data/icons/sadFace.png"
         self.setObjectName("MusicPlayer")
         self.setFixedSize(width, height)
         self.__id = id
@@ -23,10 +27,10 @@ class MusicWidget(QtWidgets.QWidget):
         self.progressBar.setObjectName("MusicProgressBar")
 
         self.happyButton = QtWidgets.QPushButton("")
-        self.happyButton.setIcon(QtGui.QIcon("./data/icons/smilingFace.png"))
+        self.happyButton.setIcon(QtGui.QIcon(self.HAPPY_UNSELECTED_ICON))
         self.happyButton.clicked.connect(self.feelingHappy)
         self.sadButton = QtWidgets.QPushButton("")
-        self.sadButton.setIcon(QtGui.QIcon("./data/icons/sadFace.png"))
+        self.sadButton.setIcon(QtGui.QIcon(self.SAD_UNSELECTED_ICON))
         self.sadButton.clicked.connect(self.feelingSad)
         
         self.bottomLayout = QtWidgets.QGridLayout()
@@ -84,24 +88,24 @@ class MusicWidget(QtWidgets.QWidget):
 
     def selectHappy(self):
         self.__songValue = self.HAPPY_WITH_SONG
-        self.happyButton.setIcon(QtGui.QIcon("./data/icons/smilingFaceSelected.png"))
-        self.sadButton.setIcon(QtGui.QIcon("./data/icons/sadFace.png"))
+        self.happyButton.setIcon(QtGui.QIcon(self.HAPPY_SELECTED_ICON))
+        self.sadButton.setIcon(QtGui.QIcon(self.SAD_UNSELECTED_ICON))
         self.__parent.songRated(self.__id)
 
     def unselectHappy(self):
         self.__songValue = self.UNSELECTED
-        self.happyButton.setIcon(QtGui.QIcon("./data/icons/smilingFace.png"))
+        self.happyButton.setIcon(QtGui.QIcon(self.HAPPY_UNSELECTED_ICON))
         self.__parent.songRated(self.__id)
 
     def selectSad(self):
         self.__songValue = self.UNHAPPY_WITH_SONG
-        self.happyButton.setIcon(QtGui.QIcon("./data/icons/smilingFace.png"))
-        self.sadButton.setIcon(QtGui.QIcon("./data/icons/sadFaceSelected.png"))
+        self.happyButton.setIcon(QtGui.QIcon(self.HAPPY_UNSELECTED_ICON))
+        self.sadButton.setIcon(QtGui.QIcon(self.SAD_SELECTED_ICON))
         self.__parent.songRated(self.__id)
 
     def unselectSad(self):
         self.__songValue = self.UNSELECTED
-        self.sadButton.setIcon(QtGui.QIcon("./data/icons/sadFace.png"))
+        self.sadButton.setIcon(QtGui.QIcon(self.SAD_UNSELECTED_ICON))
         self.__parent.songRated(self.__id)
 
     def feelingHappy(self):
