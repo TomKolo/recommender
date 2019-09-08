@@ -54,7 +54,7 @@ class MusicWidget(QtWidgets.QWidget):
         self.player.setMedia(content)
 
         #Variable storing user choice (if he likes the song or not) -1 - not selected, 0 - doesnt like the song, 1 - likes it
-        self.__songValue = -1 
+        self.__songValue = self.UNSELECTED 
 
 
     def startPlaying(self):
@@ -111,7 +111,7 @@ class MusicWidget(QtWidgets.QWidget):
     def feelingHappy(self):
         if (self.__songValue == self.UNSELECTED or self.__songValue == self.UNHAPPY_WITH_SONG):
             self.selectHappy()
-        elif (self.__songValue == 1):
+        elif (self.__songValue == self.HAPPY_WITH_SONG):
             self.unselectHappy()
 
     def feelingSad(self):
