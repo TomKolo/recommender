@@ -5,6 +5,9 @@ class MusicWidget(QtWidgets.QWidget):
     def  __init__(self, width, height, id, path, parent):
         super().__init__( flags = QtCore.Qt.Window )
         self.__parent = parent
+        self.UNHAPPY_WITH_SONG = 0
+        self.HAPPY_WITH_SONG = 1
+        self.UNSELECTED = -1
         self.setObjectName("MusicPlayer")
         self.setFixedSize(width, height)
         self.__id = id
@@ -79,19 +82,39 @@ class MusicWidget(QtWidgets.QWidget):
             self.progress = 0
             self.thread.pause = True
 
-    def feelingHappy(self):
-        self.__songValue = 1
-        self.happyButton.setIcon(self.style().standardIcon(getattr(QtWidgets.QStyle, "SP_TitleBarContextHelpButton")))
-        #self.happyButton.setIcon(QtGui.QIcon("./data/icons/smilingFaceSelected.png"))
+    def selectHappy(self):
+        self.__songValue = self.HAPPY_WITH_SONG
+        self.happyButton.setIcon(QtGui.QIcon("./data/icons/smilingFaceSelected.png"))
         self.sadButton.setIcon(QtGui.QIcon("./data/icons/sadFace.png"))
         self.__parent.songRated(self.__id)
 
-    def feelingSad(self):
-        self.__songValue = 0
+    def unselectHappy(self):
+        self.__songValue = self.UNSELECTED
         self.happyButton.setIcon(QtGui.QIcon("./data/icons/smilingFace.png"))
-        self.sadButton.setIcon(self.style().standardIcon(getattr(QtWidgets.QStyle, "SP_TitleBarContextHelpButton")))
-        #self.sadButton.setIcon(QtGui.QIcon("./data/icons/sadFaceSelected.png"))
         self.__parent.songRated(self.__id)
+
+    def selectSad(self):
+        self.__songValue = self.UNHAPPY_WITH_SONG
+        self.happyButton.setIcon(QtGui.QIcon("./data/icons/smilingFace.png"))
+        self.sadButton.setIcon(QtGui.QIcon("./data/icons/sadFaceSelected.png"))
+        self.__parent.songRated(self.__id)
+
+    def unselectSad(self):
+        self.__songValue = self.UNSELECTED
+        self.sadButton.setIcon(QtGui.QIcon("./data/icons/sadFace.png"))
+        self.__parent.songRated(self.__id)
+
+    def feelingHappy(self):
+        if (self.__songValue == self.UNSELECTED or self.__songValue == self.UNHAPPY_WITH_SONG):
+            self.selectHappy()
+        elif (self.__songValue == 1):
+            self.unselectHappy()
+
+    def feelingSad(self):
+        if (self.__songValue == self.HAPPY_WITH_SONG or self.__songValue == self.UNSELECTED):
+            self.selectSad()
+        elif (self.__songValue == self.UNHAPPY_WITH_SONG):
+            self.unselectSad()
 
     def returnValue(self):
         return self.__songValue
