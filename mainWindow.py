@@ -5,6 +5,7 @@ from widgets.playerWidget import PlayerWidget
 from widgets.scoreWidget import ScoreWidget
 from widgets.infoWidget import InfoWidget
 from widgets.paramsWidget import ParamsWidget
+from logic.state import State
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 
@@ -20,6 +21,8 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
 
         #Loading style sheet      
         self.loadStyleSheet()
+
+        #Creating state object representing 
 
         #Loading music - na razie milionsong a w zasadzie jego podzbiór (MillionSongSubset)
         # http://static.echonest.com/millionsongsubset_full.tar.gz 
@@ -47,6 +50,9 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.setWindowIcon(QtGui.QIcon("./data/icons/mainWindowIcon.png"))
         self.setCentralWidget(self.stack)
 
+        #Initialize state variable
+        self._state = None
+
     def loadStyleSheet(self):
         with open ("styleSheet.txt", "r") as stylesFile:
             styles=stylesFile.readlines()
@@ -62,16 +68,21 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.stack.setCurrentIndex(0)
 
     def startRecomendation(self):
+        self._state = State(self._state, None)
         self.stack.setCurrentIndex(1)
 
     def showScore(self):
         self.stack.setCurrentIndex(2)
+        self.scoreWidget.updateAccuracyPlot()
 
     def showInfo(self):
         self.stack.setCurrentIndex(3)
 
     def showParams(self):
         self.stack.setCurrentIndex(4)
+
+    def getState(self):
+        return self._state
 
 
 if __name__ == '__main__':

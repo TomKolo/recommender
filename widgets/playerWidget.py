@@ -85,9 +85,11 @@ class PlayerWidget(QtWidgets.QWidget):
             self.nextIterationButton.setEnabled(True)
 
     def showScore(self):
+        self.window().getState().addIteration(self.__calculateItarationAccuracy())
         self.window().showScore()
     
     def showNextiteration(self):
+        self.window().getState().addIteration(self.__calculateItarationAccuracy())
         pass
 
     def showMenu(self):
@@ -98,3 +100,10 @@ class PlayerWidget(QtWidgets.QWidget):
             if(self.__songRatings[x] == -1):
                 return False
         return True
+
+    def __calculateItarationAccuracy(self):
+        if(self.__allSongsRated()):
+            sum = 0
+            for x in range(5):
+                sum = sum + self.__songRatings[x]
+            return sum/5.0
