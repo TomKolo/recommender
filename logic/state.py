@@ -17,7 +17,7 @@ class State():
     def setRecommender(self, recommender):
         pass
 
-    def getRecommnder(self):
+    def getRecommender(self):
         return self._reccomender
 
     def getPreviousState(self):

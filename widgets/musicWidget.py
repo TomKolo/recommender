@@ -32,13 +32,14 @@ class MusicWidget(QtWidgets.QWidget):
         self.sadButton = QtWidgets.QPushButton("")
         self.sadButton.setIcon(QtGui.QIcon(self.SAD_UNSELECTED_ICON))
         self.sadButton.clicked.connect(self.feelingSad)
-        
+
         self.bottomLayout = QtWidgets.QGridLayout()
+        self.bottomLayout.setColumnStretch(2, 5) #progress bar must be the longest column in musicWidget
+
         self.bottomLayout.addWidget(self.playerButton, 0, 0, 0, 1)
         self.bottomLayout.addWidget(self.progressBar, 0, 1, 0, 5)
-        self.bottomLayout.addWidget(self.happyButton, 0, 6, 0, 1)
-        self.bottomLayout.addWidget(self.sadButton, 0, 7, 0, 1)
-
+        self.addRatingRadioButtons(self.bottomLayout)
+        
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.label)
         self.layout.addLayout(self.bottomLayout)
@@ -54,8 +55,27 @@ class MusicWidget(QtWidgets.QWidget):
         self.player.setMedia(content)
 
         #Variable storing user choice (if he likes the song or not) -1 - not selected, 0 - doesnt like the song, 1 - likes it
-        self.__songValue = self.UNSELECTED 
+        self.__songRating = self.UNSELECTED 
 
+    def addRatingRadioButton(self, bottomLayout, ratingNum, columnPos):
+        self.ratingRadioButton = QtWidgets.QRadioButton(str(ratingNum))
+        self.ratingRadioButton.rating = ratingNum
+        self.ratingRadioButton.toggled.connect(self.onRatingRBclicked)
+        bottomLayout.addWidget(self.ratingRadioButton, 0, columnPos, 0, 1)
+
+    def addRatingRadioButtons(self, bottomLayout):
+        self.addRatingRadioButton(bottomLayout, 1, 6)
+        self.addRatingRadioButton(bottomLayout, 2, 7)
+        self.addRatingRadioButton(bottomLayout, 3, 8)
+        self.addRatingRadioButton(bottomLayout, 4, 9)
+        self.addRatingRadioButton(bottomLayout, 5, 10)
+
+    def onRatingRBclicked(self):
+        self.ratingRadioButton = self.sender()
+        if self.ratingRadioButton.isChecked():
+            print("IKSDE: %s" % (self.ratingRadioButton.rating))
+        self.__songRating = self.ratingRadioButton.rating
+        self.__parent.songRated(self.__id)
 
     def startPlaying(self):
         self.playerButton.setIcon(self.style().standardIcon(getattr(QtWidgets.QStyle, "SP_MediaPause")))
@@ -87,41 +107,41 @@ class MusicWidget(QtWidgets.QWidget):
             self.thread.pause = True
 
     def selectHappy(self):
-        self.__songValue = self.HAPPY_WITH_SONG
+        self.__songRating = self.HAPPY_WITH_SONG
         self.happyButton.setIcon(QtGui.QIcon(self.HAPPY_SELECTED_ICON))
         self.sadButton.setIcon(QtGui.QIcon(self.SAD_UNSELECTED_ICON))
         self.__parent.songRated(self.__id)
 
     def unselectHappy(self):
-        self.__songValue = self.UNSELECTED
+        self.__songRating = self.UNSELECTED
         self.happyButton.setIcon(QtGui.QIcon(self.HAPPY_UNSELECTED_ICON))
         self.__parent.songRated(self.__id)
 
     def selectSad(self):
-        self.__songValue = self.UNHAPPY_WITH_SONG
+        self.__songRating = self.UNHAPPY_WITH_SONG
         self.happyButton.setIcon(QtGui.QIcon(self.HAPPY_UNSELECTED_ICON))
         self.sadButton.setIcon(QtGui.QIcon(self.SAD_SELECTED_ICON))
         self.__parent.songRated(self.__id)
 
     def unselectSad(self):
-        self.__songValue = self.UNSELECTED
+        self.__songRating = self.UNSELECTED
         self.sadButton.setIcon(QtGui.QIcon(self.SAD_UNSELECTED_ICON))
         self.__parent.songRated(self.__id)
 
     def feelingHappy(self):
-        if (self.__songValue == self.UNSELECTED or self.__songValue == self.UNHAPPY_WITH_SONG):
+        if (self.__songRating == self.UNSELECTED or self.__songRating == self.UNHAPPY_WITH_SONG):
             self.selectHappy()
-        elif (self.__songValue == self.HAPPY_WITH_SONG):
+        elif (self.__songRating == self.HAPPY_WITH_SONG):
             self.unselectHappy()
 
     def feelingSad(self):
-        if (self.__songValue == self.HAPPY_WITH_SONG or self.__songValue == self.UNSELECTED):
+        if (self.__songRating == self.HAPPY_WITH_SONG or self.__songRating == self.UNSELECTED):
             self.selectSad()
-        elif (self.__songValue == self.UNHAPPY_WITH_SONG):
+        elif (self.__songRating == self.UNHAPPY_WITH_SONG):
             self.unselectSad()
 
-    def returnValue(self):
-        return self.__songValue
+    def returnSongRating(self):
+        return self.__songRating
 
 class Thread(QtCore.QThread):
     countChanged = QtCore.pyqtSignal(int)

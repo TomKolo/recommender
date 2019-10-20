@@ -79,7 +79,7 @@ class PlayerWidget(QtWidgets.QWidget):
         self.__audioSemafor = -1
 
     def songRated(self, id):
-        self.__songRatings[id] = self.__musicWidgets[id].returnValue()
+        self.__songRatings[id] = self.__musicWidgets[id].returnSongRating()
         if(self.__allSongsRated()):
             self.showScoreButton.setEnabled(True)
             self.nextIterationButton.setEnabled(True)

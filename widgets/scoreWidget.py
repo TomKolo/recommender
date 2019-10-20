@@ -22,4 +22,6 @@ class ScoreWidget(QtWidgets.QWidget):
 
     def updateAccuracyPlot(self):
         self.accuracyPlot.setData(self.window().getState().getAccuracies())
+        self.window().getState().getRecommender().recommend()
+        #tutaj wypisze na ekran rekomendacje
         

@@ -7,7 +7,7 @@ from widgets.infoWidget import InfoWidget
 from widgets.paramsWidget import ParamsWidget
 from logic.state import State
 from PyQt5 import QtWidgets, QtGui, QtCore
-
+from logic.collaborativeRecommender import CollaborativeRecommender
 
 # Główne okno przeglądarki grafów.
 class RecommenderViewer( QtWidgets.QMainWindow ):
@@ -68,7 +68,8 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.stack.setCurrentIndex(0)
 
     def startRecomendation(self):
-        self._state = State(self._state, None)
+        # TODO: na sztywno podajemy na razie CollaborativeFiltering
+        self._state = State(self._state, CollaborativeRecommender()) 
         self.stack.setCurrentIndex(1)
 
     def showScore(self):
