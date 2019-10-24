@@ -22,13 +22,37 @@ import numpy as np
 
 
 #import pandas as pd
-#f=pd.read_csv("ratings.csv")
-#keep_col = ['userId','songID','timestamp']
+#f=pd.read_csv("songs_ratings.csv")
+#keep_col = ['userId','song_id']
 #new_f = f[keep_col]
-#new_f.to_csv("ratingsWithoutFailedRates.csv", index=False)
+#new_f.to_csv("xd2.csv", index=False)
 
 
-f=pd.read_csv("ratingsWithoutFailedRates.csv")
-f.insert(2, 'rating', np.random.randint(1,6, f.shape[0]))
-print(f)
-f.to_csv("song_ratings.csv", index=False)
+stary = pd.read_csv("song_dataset.csv")
+nowy = pd.read_csv("songs_ratings.csv")
+
+#with open("song_dataset.csv", "r") as f:
+ #   reader = csv.reader(f)
+  #  for line_num, content in enumerate(reader):
+   #     for ind in nowy.index:
+    #        if content[1] == nowy['song_id'][ind]:
+     #           print(content, line_num + 1)
+
+#thiss = 1
+#for ind in nowy.index:
+    #for ind2 in stary.index:
+        #if nowy['song_id'][ind] == stary['song_id'][ind2]:
+            #xd = stary.at[ind2, 'songId']
+            #nowy.at[ind, 'songId'] = xd
+            #print(nowy['songId'][ind])
+            
+#nowy.to_csv("xd2.csv", index=False)
+
+
+
+#f=pd.read_csv("xd2.csv")
+#f.insert(2, 'rating', np.random.randint(1,6, f.shape[0]))
+#f.to_csv("songs_ratings.csv", index=False)
+
+nowy = nowy.iloc[:280000]
+nowy.to_csv("xd2.csv", index=False)
