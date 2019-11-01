@@ -2,9 +2,9 @@
 import copy
 import pandas as pd
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import pairwise_distances
 from logic.recommender import Recommender
+from hyperparameters.hyperparametersService import HyperparameterService
 
 """
 Class representing CollaborativeFiltering Recommender.
@@ -51,14 +51,15 @@ class CollaborativeRecommender(Recommender):
 
     def calculateSimilarityBetweenTheUsers(self, objectsToReturn, final_user, final_song):  
         # user similarity on replacing NAN by user avg
-        b = cosine_similarity(final_user)
+        b = HyperparameterService().callDistanceAlgorithm(final_user)
+
         np.fill_diagonal(b, 0 )
         similarity_with_user = pd.DataFrame(b,index=final_user.index)
         similarity_with_user.columns=final_user.index
         print(similarity_with_user.head())
 
         # user similarity on replacing NAN by item(song) avg
-        cosine = cosine_similarity(final_song)
+        cosine = HyperparameterService().callDistanceAlgorithm(final_song)
         np.fill_diagonal(cosine, 0 )
         similarity_with_song = pd.DataFrame(cosine,index=final_song.index)
         similarity_with_song.columns=final_user.index
@@ -175,7 +176,8 @@ class CollaborativeRecommender(Recommender):
         similarity_with_song = copy.deepcopy(objectsToReturn[1])
 
         objectsToReturn = []
-        self.findNneighboursForEachUser(30, objectsToReturn, similarity_with_user, similarity_with_song)
+        numberOfNeighbours = HyperparameterService().getNumberOfNeighbours();
+        self.findNneighboursForEachUser(numberOfNeighbours, objectsToReturn, similarity_with_user, similarity_with_song)
         sim_user_N_user = copy.deepcopy(objectsToReturn[0])
         sim_user_N_song = copy.deepcopy(objectsToReturn[1])
 
