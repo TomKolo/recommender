@@ -56,11 +56,14 @@ class DatasetLoader:
         plt.xlim(1, 1001)
         plt.xticks(np.arange(0, 1000, 100), np.arange(0, 1000, 100))
 
+        ratingsSummary = self.songsRatings.groupby(by = "rating")['userId'].count().reset_index(name = 'rating_count')
+        print(ratingsSummary)
+        ratingsSummary.plot(kind = 'bar', x = 'rating', y = 'rating_count')
         plt.show()
 
 
     def loadDataset(self):
-        songs = pd.read_csv("./data/song_dataset.csv", encoding = "Latin1")
-        songsRatings = pd.read_csv("./data/songs_ratings.csv", encoding = "Latin1")
+        self.songs = pd.read_csv("./data/song_dataset.csv", encoding = "Latin1")
+        self.songsRatings = pd.read_csv("./data/songs_ratings.csv", encoding = "Latin1")
         #self.drawPlots()
-        return songs, songsRatings
+        return self.songs, self.songsRatings
