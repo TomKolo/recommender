@@ -8,10 +8,9 @@ from widgets.paramsWidget import ParamsWidget
 from logic.state import State
 from PyQt5 import QtWidgets, QtGui, QtCore
 from logic.collaborativeRecommender import CollaborativeRecommender
+from logic.datasetLoader import DatasetLoader
 
-# Główne okno przeglądarki grafów.
 class RecommenderViewer( QtWidgets.QMainWindow ):
-
    
     def __init__(self, size):
         super().__init__( flags = QtCore.Qt.Window )
@@ -60,9 +59,11 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.setStyleSheet("".join(styles))
 
     def loadMusic(self):
-        #TODO
-        pass
-
+        # Generuje oceny na podstawie listen_count - wywołać tylko, jeżeli chcesz wygenerować ratingi
+        # DatasetLoader().prepareDataset()
+        self.songs, self.songs_ratings = DatasetLoader().loadDataset()
+        print(self.songs.head())
+        print(self.songs_ratings.head())
 
     def showMenu(self):
         self.stack.setCurrentIndex(0)
