@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
 
 class DatasetLoader:
@@ -37,7 +38,29 @@ class DatasetLoader:
         songs_ratings.drop(['listen_count', 'max_listen_count'], 1, inplace = True)
         songs_ratings.to_csv("./data/songs_ratings.csv", index = False)
 
+    def drawPlots(self):
+        userListenCounts = pd.read_table("./data/user_songs_listen_counts.txt", header = None)
+        userListenCounts.columns = ['userId', 'song_id', 'listen_count']
+        userUniqueSongsCount = userListenCounts.groupby(by = "userId")['listen_count'].count().reset_index(name = 'songs_count')
+        totalListeners = userUniqueSongsCount.groupby(by = "songs_count")['userId'].count().reset_index(name = 'listeners_count')
+        totalListeners.plot(kind = 'bar', x = 'songs_count', y = 'listeners_count')
+        plt.xticks(np.arange(1, max(totalListeners['songs_count']) + 1, 50), np.arange(1, max(totalListeners['songs_count']) + 1, 50))
+        totalListeners.plot(kind = 'bar', x = 'songs_count', y = 'listeners_count')
+        plt.xlim(1, 101)
+        plt.xticks(np.arange(1, 101, 11), np.arange(1, 101, 11))
+
+        totalListens = userListenCounts.groupby(by = "userId")['listen_count'].sum().reset_index(name = 'total_listens')
+        print(max(totalListens['total_listens']))
+        uniqueListeners = totalListens.groupby(by = "total_listens")['userId'].count().reset_index(name = 'listeners_count')
+        uniqueListeners.plot(kind = 'bar', x = 'total_listens', y = 'listeners_count')
+        plt.xlim(1, 1001)
+        plt.xticks(np.arange(0, 1000, 100), np.arange(0, 1000, 100))
+
+        plt.show()
+
+
     def loadDataset(self):
         songs = pd.read_csv("./data/song_dataset.csv", encoding = "Latin1")
         songsRatings = pd.read_csv("./data/songs_ratings.csv", encoding = "Latin1")
+        #self.drawPlots()
         return songs, songsRatings

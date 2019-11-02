@@ -60,10 +60,10 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
 
     def loadMusic(self):
         # Generuje oceny na podstawie listen_count - wywołać tylko, jeżeli chcesz wygenerować ratingi
-        # DatasetLoader().prepareDataset()
+        # DatasetLoader().prepareDataset2()
         self.songs, self.songs_ratings = DatasetLoader().loadDataset()
-        print(self.songs.head())
-        print(self.songs_ratings.head())
+        #print(self.songs.head())
+        #print(self.songs_ratings.head())
 
     def showMenu(self):
         self.stack.setCurrentIndex(0)
