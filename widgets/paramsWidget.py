@@ -1,62 +1,122 @@
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit, QTextEdit, QGridLayout, QVBoxLayout, QRadioButton)
+from PyQt5.QtWidgets import (QWidget, QLabel, QLineEdit, QTextEdit, QGridLayout, QVBoxLayout, QRadioButton, QInputDialog)
+from hyperparameters.hyperparameterConsts import DistanceAlgorithm
+from hyperparameters.hyperparametersState import CollaborativeHyperparametersState
 
 class ParamsWidget(QtWidgets.QWidget):
     def  __init__(self, width, height):
         super().__init__( flags = QtCore.Qt.Window )
+        self.width = width
+        self.height = height
+        self.currentlyChosenAlgorithm = CollaborativeHyperparametersState().distanceAlgorithm
         self.initUI()
-
+        
     def initUI(self):
         grid = QGridLayout()
-        grid.setSpacing(10)
+        grid.setRowStretch(0, 1)
+        grid.setRowStretch(1, 3)
+        grid.setRowStretch(2, 3)
+        grid.setRowStretch(3, 2)
+        grid.setRowStretch(4, 3)
+        grid.setRowStretch(5, 1)
+        saveButton = QtWidgets.QPushButton("Zapisz i wyjdź")
+        saveButton.setObjectName("PlayerButton")    
+        saveButton.setFixedSize(self.width*0.2, self.height*0.08)
+        saveButton.clicked.connect(self.saveAndExit)
+        grid.addWidget(saveButton, 4, 1)
+
+        exitButton = QtWidgets.QPushButton("Wróć do menu")
+        exitButton.setObjectName("PlayerButton")    
+        exitButton.setFixedSize(self.width*0.2, self.height*0.08)
+        exitButton.clicked.connect(self.exitToMenu)
+        grid.addWidget(exitButton, 1, 2)
 
         distanceLayout = self.getDistanceLayout()
-        grid.addLayout(distanceLayout, 0, 0)
+        grid.addLayout(distanceLayout, 2, 1)
 
         neighboursLayout = self.getNeighboursLayout()
-        grid.addLayout(neighboursLayout, 0, 1)
+        grid.addLayout(neighboursLayout, 3, 1)
         
-        self.setLayout(grid) 
-        self.setGeometry(300, 300, 350, 300)   
+        self.setLayout(grid)   
         self.show()
 
-    def onClicked(self):
-        radioButton = self.sender()
-        if radioButton.isChecked():
-            print("Checked is %s" % (radioButton.algorithm))
+    def exitToMenu(self):
+        self.window().showMenu()
+
+    def saveAndExit(self):
+        CollaborativeHyperparametersState().distanceAlgorithm = self.currentlyChosenAlgorithm
+        n = self.nInput.text()
+        if n and n.isdigit():
+            print("setting number {}".format(n))
+            CollaborativeHyperparametersState().numberOfNeighbours = int(n)
+        else:
+            self.nInput.setText(CollaborativeHyperparametersState().numberOfNeighbours.__str__())
+        self.window().showMenu()
+
+    def algorithmSelectionChanged(self):
+        radiobutton = self.sender()
+        if radiobutton.isChecked():
+            self.currentlyChosenAlgorithm = radiobutton.algorithm
 
     def getDistanceLayout(self):
         distanceBox = QGridLayout()
         distanceLabel = QLabel('Wybierz metodę obliczania dystansu')
+        distanceLabel.setObjectName('ParamLabel')
         distanceBox.addWidget(distanceLabel, 0, 0)
 
-        cosineRadiobutton = QRadioButton("Cosine")
-        cosineRadiobutton.setChecked(True)
-        cosineRadiobutton.algorithm = "Cosine"
-        cosineRadiobutton.toggled.connect(self.onClicked)
-        distanceBox.addWidget(cosineRadiobutton, 1, 0)
+        cosineSimilarityRadiobutton = QRadioButton("Cosine similarity")
+        cosineSimilarityRadiobutton.algorithm = DistanceAlgorithm.cosineSimilarity
+        cosineSimilarityRadiobutton.toggled.connect(self.algorithmSelectionChanged)
+        self.setChecked(cosineSimilarityRadiobutton)
+        distanceBox.addWidget(cosineSimilarityRadiobutton, 1, 0)
 
-        euclideanRadiobutton = QRadioButton("Euclidean")
-        euclideanRadiobutton.algorithm = "Euclidean"
-        euclideanRadiobutton.toggled.connect(self.onClicked) 
-        distanceBox.addWidget(euclideanRadiobutton, 2, 0)
+        euclideanRadiobutton = QRadioButton("Euclidean distance")
+        euclideanRadiobutton.algorithm = DistanceAlgorithm.euclideanDistance
+        euclideanRadiobutton.toggled.connect(self.algorithmSelectionChanged)
+        self.setChecked(euclideanRadiobutton)
+        distanceBox.addWidget(euclideanRadiobutton, 3, 0)
+
+        cosineDistanceRadiobutton = QRadioButton("Cosine distance")
+        cosineDistanceRadiobutton.algorithm = DistanceAlgorithm.cosineDistance
+        cosineDistanceRadiobutton.toggled.connect(self.algorithmSelectionChanged)
+        self.setChecked(cosineDistanceRadiobutton) 
+        distanceBox.addWidget(cosineDistanceRadiobutton, 2, 0)
+
+        manhattanRadiobutton = QRadioButton("Manhattan distance")
+        manhattanRadiobutton.algorithm = DistanceAlgorithm.manhattanDistance
+        manhattanRadiobutton.toggled.connect(self.algorithmSelectionChanged) 
+        self.setChecked(manhattanRadiobutton)
+        distanceBox.addWidget(manhattanRadiobutton, 4, 0)
+
+        haversineRadiobutton = QRadioButton("Haversine distance")
+        haversineRadiobutton.algorithm = DistanceAlgorithm.haversineDistance
+        haversineRadiobutton.toggled.connect(self.algorithmSelectionChanged) 
+        self.setChecked(haversineRadiobutton)
+        distanceBox.addWidget(haversineRadiobutton, 5, 0)
+
         return distanceBox
 
+    def setChecked(self, radiobutton):
+        currentlyCheckedAlgorithm = CollaborativeHyperparametersState().distanceAlgorithm
+        if (radiobutton.algorithm == currentlyCheckedAlgorithm):
+            radiobutton.setChecked(True)
+        else: 
+            radiobutton.setChecked(False)
 
     def getNeighboursLayout(self):
-        neighboursGrid = QGridLayout()
-        label = QLabel('Wybierz k w k-nearest neighbours')
-        neighboursGrid.addWidget(label, 0, 0)
+        neighboursGrid = QVBoxLayout()
+        label = QLabel('Wybierz n w n-nearest neighbours')
+        label.setObjectName('ParamLabel')
+        neighboursGrid.addWidget(label)
 
-        cousineRadiobutton = QRadioButton("Cousine")
-        cousineRadiobutton.setChecked(True)
-        cousineRadiobutton.algorithm = "Cousine"
-        cousineRadiobutton.toggled.connect(self.onClicked)
-        neighboursGrid.addWidget(cousineRadiobutton, 1, 0)
+        self.nInput = QLineEdit()
+        self.nInput.setObjectName('NInput')
+        self.nInput.setValidator(QtGui.QIntValidator())
+        self.nInput.setMaxLength(3)
+        n = CollaborativeHyperparametersState().numberOfNeighbours.__str__()
+        print("Current n: {}".format(n))
+        self.nInput.setText(n)
+        neighboursGrid.addWidget(self.nInput)
 
-        euclideanRadiobutton = QRadioButton("Euclidean")
-        euclideanRadiobutton.algorithm = "Euclidean"
-        euclideanRadiobutton.toggled.connect(self.onClicked)
-        neighboursGrid.addWidget(euclideanRadiobutton, 2, 0)
         return neighboursGrid

@@ -3,3 +3,5 @@ QPushButton#PlayerButton { background-color: #54d0d9; font-size: 16px; font: bol
 QLabel#MenuLabel { font-size: 32px; font: bold; text-align: center;}
 QLabel#PlayerLabel { font-size: 20px; font: bold; text-align: center;}
 QLabel#MusicLabel { font-size: 20px; text-align: center; }
+QLabel#ParamLabel { font-size: 22px; font: bold; text-align: center;}
+QLineEdit#NInput { max-width: 90px; margin-bottom: 40px }
