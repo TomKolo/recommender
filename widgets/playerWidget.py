@@ -19,7 +19,7 @@ class PlayerWidget(QtWidgets.QWidget):
 
         self.nextIterationButton = QtWidgets.QPushButton("Przejdź do następnej itaracji")
         self.nextIterationButton.setObjectName("PlayerButton")    
-        self.nextIterationButton.setFixedSize(width*0.2, height*0.1)
+        self.nextIterationButton.setFixedSize(width*0.25, height*0.1)
         self.nextIterationButton.clicked.connect(self.showNextiteration)
         self.nextIterationButton.setEnabled(False)
 
