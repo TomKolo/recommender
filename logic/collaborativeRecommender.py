@@ -144,7 +144,8 @@ class CollaborativeRecommender(Recommender):
         Song_Name = top_5_recommendation.merge(self.songs, how='inner', on='song_id')
         Song_Names = Song_Name.title.values.tolist()
         Artist_Names = Song_Name.artist_name.values.tolist()
-        return Song_Names, Artist_Names
+        Song_Ids = Song_Name.song_id.values.tolist()
+        return Song_Names, Artist_Names, Song_Ids
 
 
     def getRecommendedSongs(self, Rating_avg, check, sim_user_N_song,
@@ -152,7 +153,7 @@ class CollaborativeRecommender(Recommender):
         Rating_avg = Rating_avg.astype({"song_id": str})
         Song_user = Rating_avg.groupby(by = 'userId')['song_id'].apply(lambda x:','.join(x))
         user = '950a62197ab5b48aecfc728649b1b84f35a096bd' #the user for which we're recommending
-        predicted_songs, predicted_songs_artists = self.userItemRecommendedSongs(user, check, sim_user_N_song,
+        predicted_songs, predicted_songs_artists, predicted_songs_ids = self.userItemRecommendedSongs(user, check, sim_user_N_song,
                                                         Song_user, final_song, 
                                                         Mean, similarity_with_song)
         print("RECOMMENDATIONS for some user: ")
@@ -160,6 +161,7 @@ class CollaborativeRecommender(Recommender):
         for i in predicted_songs:
             print('{0} - {1}'.format(i, predicted_songs_artists[cnt]))
             cnt += 1
+        return predicted_songs, predicted_songs_artists, predicted_songs_ids
 
     def recommend(self):
         objectsToReturn = []
@@ -195,5 +197,5 @@ class CollaborativeRecommender(Recommender):
                                           similarity_with_song)
         print("Partial score (u,i) is", partialScore)
 
-        self.getRecommendedSongs(Rating_avg, check, sim_user_N_song, final_song, Mean, similarity_with_song)
+        return self.getRecommendedSongs(Rating_avg, check, sim_user_N_song, final_song, Mean, similarity_with_song)
 

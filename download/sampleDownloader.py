@@ -10,7 +10,7 @@ class SampleDownloader:
         self.hostHeaderValue =  "deezerdevs-deezer.p.rapidapi.com"
         self.searchUrl = "https://deezerdevs-deezer.p.rapidapi.com/search"
         self.searchQueryKey = "q"
-        self.samplesDirectory = "../data/samples"
+        self.samplesDirectory = "./data/samples"
 
     def __download(self, url, filePath):
         get_response = requests.get(url, stream=True)
@@ -29,13 +29,22 @@ class SampleDownloader:
             sampleUrl = jsonResponse['data'][0]['preview']
             return sampleUrl
         else:
-            raise Exception("Song {} of artist {} was not found".format(title, artist))
+            #raise Exception("Song {} of artist {} was not found".format(title, artist))
+           print("Song {} of artist {} was not found".format(title, artist))
+           return None
 
     def downloadSong(self, title, artist, songId):
         sampleUrl = self.__findSampleUrl(title, artist)
-        filePath = "{}/{}.mp3".format(self.samplesDirectory, songId)
-        self.__download(sampleUrl, filePath)
+        if sampleUrl:
+            filePath = "{}/{}.mp3".format(self.samplesDirectory, songId)
+            self.__download(sampleUrl, filePath)
+            return True
+        else:
+            return False
 
-if __name__ == '__main__':
-    downloader = SampleDownloader()
-    downloader.downloadSong("Pain Over Acceptance", "Weekend Nachos", "SOOKLXI12A8C142FB0")
+    def checkIfSongIsAvailable(self, title, artist, songId):
+        sampleUrl = self.__findSampleUrl(title, artist)
+        if sampleUrl:
+            return True
+        else:
+            return False

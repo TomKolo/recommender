@@ -73,8 +73,6 @@ class MusicWidget(QtWidgets.QWidget):
 
     def onRatingRBclicked(self):
         self.ratingRadioButton = self.sender()
-        if self.ratingRadioButton.isChecked():
-            print("IKSDE: %s" % (self.ratingRadioButton.rating))
         self.__songRating = self.ratingRadioButton.rating
         self.__parent.songRated(self.__id)
 

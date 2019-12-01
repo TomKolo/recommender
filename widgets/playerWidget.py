@@ -3,6 +3,7 @@ import random
 from PyQt5 import QtWidgets, QtGui, QtCore
 import pandas as pd
 from widgets.musicWidget import MusicWidget
+from download.sampleDownloader import SampleDownloader
 
 class PlayerWidget(QtWidgets.QWidget):
     def  __init__(self, width, height):
@@ -91,7 +92,8 @@ class PlayerWidget(QtWidgets.QWidget):
     
     def showNextiteration(self):
         self.window().getState().addIteration(self.__calculateItarationAccuracy())
-        pass
+        songs_titles, songs_artists, songs_ids = self.window().getState().getRecommender().recommend()
+        self.initNewIteration(songs_titles, songs_artists, songs_ids)
 
     def showMenu(self):
         self.window().showMenu()
@@ -112,8 +114,55 @@ class PlayerWidget(QtWidgets.QWidget):
     def addRandomSongsInitially(self, width, height, recommender):
         numOfSongs = len(recommender.songs.index)
         fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
+        downloader = SampleDownloader()
         for x in range(5):
             titleOfSong = recommender.songs['title'].values[fiveUniqueRandomSongs[x]]
             artistOfSong = recommender.songs['artist_name'].values[fiveUniqueRandomSongs[x]]
-            self.__musicWidgets.append(MusicWidget(width*0.99, height*0.1, x, "./data/song1.mp3", self, titleOfSong, artistOfSong))
+            songId = recommender.songs['song_id'].values[fiveUniqueRandomSongs[x]]
+            result = downloader.downloadSong(titleOfSong, artistOfSong, songId)
+            if result:
+                filePath = "./data/samples/{}.mp3".format(songId)
+            else:
+                filePath =  "./data/samples/song1.mp3"
+            self.__musicWidgets.append(MusicWidget(width*0.99, height*0.1, x, filePath, self, titleOfSong, artistOfSong))
             self.layout.addWidget(self.__musicWidgets[x])
+
+    def initNewIteration(self, songs_titles, songs_artists, songs_ids):
+        for widget in self.__musicWidgets:
+            self.layout.removeWidget(widget)
+            widget.setParent(None)
+        self.__musicWidgets.clear()
+        downloader = SampleDownloader()
+        for x in range(5):
+            titleOfSong = songs_titles[x]
+            artistOfSong = songs_artists[x]
+            songId = songs_ids[x]
+            result = downloader.downloadSong(titleOfSong, artistOfSong, songId)
+            if result:
+                filePath = "./data/samples/{}.mp3".format(songId)
+            else:
+                filePath =  "./data/samples/song1.mp3"
+            self.__musicWidgets.append(MusicWidget(self.width*0.99, self.height*0.1, x, filePath, self, titleOfSong, artistOfSong))
+            self.layout.addWidget(self.__musicWidgets[x])
+        self.layout.update();
+
+    def initNewIterationDebug(self, recommender):
+        for widget in self.__musicWidgets:
+            self.layout.removeWidget(widget)
+            widget.setParent(None)
+        self.__musicWidgets.clear()
+        downloader = SampleDownloader()
+        numOfSongs = len(recommender.songs.index)
+        fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
+        for x in range(5):
+            titleOfSong = recommender.songs['title'].values[fiveUniqueRandomSongs[x]]
+            artistOfSong = recommender.songs['artist_name'].values[fiveUniqueRandomSongs[x]]
+            songId = recommender.songs['song_id'].values[fiveUniqueRandomSongs[x]]
+            result = downloader.downloadSong(titleOfSong, artistOfSong, songId)
+            if result:
+                filePath = "./data/samples/{}.mp3".format(songId)
+            else:
+                filePath =  "./data/samples/song1.mp3"
+            self.__musicWidgets.append(MusicWidget(self.width*0.99, self.height*0.1, x, filePath, self, titleOfSong, artistOfSong))
+            self.layout.addWidget(self.__musicWidgets[x])
+        self.layout.update();
