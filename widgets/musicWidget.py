@@ -2,7 +2,7 @@ import sys, time
 from PyQt5 import QtWidgets, QtGui, QtCore, QtMultimedia
 
 class MusicWidget(QtWidgets.QWidget):
-    def  __init__(self, width, height, id, path, parent):
+    def  __init__(self, width, height, id, path, parent, titleOfSong, artistOfSong):
         super().__init__( flags = QtCore.Qt.Window )
         self.__parent = parent
         self.UNHAPPY_WITH_SONG = 0
@@ -15,7 +15,8 @@ class MusicWidget(QtWidgets.QWidget):
         self.setObjectName("MusicPlayer")
         self.setFixedSize(width, height)
         self.__id = id
-        self.label = QtWidgets.QLabel(path.split('/')[-1])
+        #self.label = QtWidgets.QLabel(path.split('/')[-1]) #getting title of song from path
+        self.label = QtWidgets.QLabel(titleOfSong + " - " + artistOfSong)
         self.label.setObjectName("MusicLabel")
         self.playerButton = QtWidgets.QPushButton("")
         self.playerButton.setIcon(self.style().standardIcon(getattr(QtWidgets.QStyle, "SP_MediaPlay")))

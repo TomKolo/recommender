@@ -14,12 +14,12 @@ It inherits Recommender.
 class CollaborativeRecommender(Recommender):
 
     def __init__(self):
+        self.songs = pd.read_csv("./data/song_dataset.csv",encoding="Latin1")
         pass
 
 
     def importDataset(self, objectsToReturn):
-        self.songs = pd.read_csv("./data/song_dataset.csv",encoding="Latin1")
-        Ratings = pd.read_csv("./data/songs_ratings.csv")
+        Ratings = pd.read_csv("./data/fewer_songs_ratings.csv")
 
         Mean = Ratings.groupby(by="userId",as_index=False)['rating'].mean()
         Rating_avg = pd.merge(Ratings,Mean,on='userId')
@@ -59,9 +59,9 @@ class CollaborativeRecommender(Recommender):
         print(similarity_with_user.head())
 
         # user similarity on replacing NAN by item(song) avg
-        cosine = HyperparameterService().callDistanceAlgorithm(final_song)
-        np.fill_diagonal(cosine, 0 )
-        similarity_with_song = pd.DataFrame(cosine,index=final_song.index)
+        distanceAlgorithm = HyperparameterService().callDistanceAlgorithm(final_song)
+        np.fill_diagonal(distanceAlgorithm, 0 )
+        similarity_with_song = pd.DataFrame(distanceAlgorithm,index=final_song.index)
         similarity_with_song.columns=final_user.index
         print(similarity_with_song.head())
 
@@ -143,20 +143,23 @@ class CollaborativeRecommender(Recommender):
         top_5_recommendation = data.sort_values(by='score',ascending=False).head(5)
         Song_Name = top_5_recommendation.merge(self.songs, how='inner', on='song_id')
         Song_Names = Song_Name.title.values.tolist()
-        return Song_Names
+        Artist_Names = Song_Name.artist_name.values.tolist()
+        return Song_Names, Artist_Names
 
 
     def getRecommendedSongs(self, Rating_avg, check, sim_user_N_song,
                            final_song, Mean, similarity_with_song):
         Rating_avg = Rating_avg.astype({"song_id": str})
         Song_user = Rating_avg.groupby(by = 'userId')['song_id'].apply(lambda x:','.join(x))
-        user = 'bd4c6e843f00bd476847fb75c47b4fb430a06856' #the user for which we're recommending
-        predicted_songs = self.userItemRecommendedSongs(user, check, sim_user_N_song,
+        user = '950a62197ab5b48aecfc728649b1b84f35a096bd' #the user for which we're recommending
+        predicted_songs, predicted_songs_artists = self.userItemRecommendedSongs(user, check, sim_user_N_song,
                                                         Song_user, final_song, 
                                                         Mean, similarity_with_song)
-        print("RECOMMENDATIONS for some user : ")
+        print("RECOMMENDATIONS for some user: ")
+        cnt = 0
         for i in predicted_songs:
-            print(i)
+            print('{0} - {1}'.format(i, predicted_songs_artists[cnt]))
+            cnt += 1
 
     def recommend(self):
         objectsToReturn = []
@@ -185,7 +188,7 @@ class CollaborativeRecommender(Recommender):
        # a = a.loc[ : , ['rating_x_x','rating_x_y','title']]
         #print(a.head())
 
-        partialScore = self.userItemScore('bd4c6e843f00bd476847fb75c47b4fb430a06856', 'SOHIROU12AB01852AF', 
+        partialScore = self.userItemScore('950a62197ab5b48aecfc728649b1b84f35a096bd', 'SORHJAS12AB0187D3F', 
                                           sim_user_N_song, 
                                           final_song, 
                                           Mean,

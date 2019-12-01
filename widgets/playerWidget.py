@@ -1,10 +1,14 @@
 import sys
+import random
 from PyQt5 import QtWidgets, QtGui, QtCore
+import pandas as pd
 from widgets.musicWidget import MusicWidget
 
 class PlayerWidget(QtWidgets.QWidget):
     def  __init__(self, width, height):
         super().__init__( flags = QtCore.Qt.Window )
+        self.width = width
+        self.height = height
 
         #Initialize widgets
         self.titleLabel = QtWidgets.QLabel("Iteracja 1")
@@ -57,10 +61,7 @@ class PlayerWidget(QtWidgets.QWidget):
 
         self.__musicWidgets = []
         self.__songRatings = [-1 for x in range(0, 5)]
-        for x in range(5):
-            self.__musicWidgets.append(MusicWidget(width*0.99, height*0.1, x, "./data/song1.mp3", self))
-            self.layout.addWidget(self.__musicWidgets[x])
-
+       
         self.layout.addLayout(self.bottomBarLayout)
 
         self.setLayout(self.layout)
@@ -107,3 +108,12 @@ class PlayerWidget(QtWidgets.QWidget):
             for x in range(5):
                 sum = sum + self.__songRatings[x]
             return sum/5.0
+
+    def addRandomSongsInitially(self, width, height, recommender):
+        numOfSongs = len(recommender.songs.index)
+        fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
+        for x in range(5):
+            titleOfSong = recommender.songs['title'].values[fiveUniqueRandomSongs[x]]
+            artistOfSong = recommender.songs['artist_name'].values[fiveUniqueRandomSongs[x]]
+            self.__musicWidgets.append(MusicWidget(width*0.99, height*0.1, x, "./data/song1.mp3", self, titleOfSong, artistOfSong))
+            self.layout.addWidget(self.__musicWidgets[x])

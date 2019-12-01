@@ -17,6 +17,8 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
 
         #Set initial size
         self.setFixedSize(size.width()*0.6, size.height()*0.8)
+        self.fixedWidth = size.width()*0.6
+        self.fixedHeight = size.height()*0.8
 
         #Loading style sheet      
         self.loadStyleSheet()
@@ -29,11 +31,11 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.loadMusic()
 
         #Creating widgets
-        self.menuWidget = MenuWidget(size.width()*0.6, size.height()*0.8)
-        self.playerWidget = PlayerWidget(size.width()*0.6, size.height()*0.8)
-        self.scoreWidget = ScoreWidget(size.width()*0.6, size.height()*0.8)
-        self.infoWidget = InfoWidget(size.width()*0.6, size.height()*0.8)
-        self.paramsWidget = ParamsWidget(size.width()*0.6, size.height()*0.8)
+        self.menuWidget = MenuWidget(self.fixedWidth, self.fixedHeight)
+        self.playerWidget = PlayerWidget(self.fixedWidth, self.fixedHeight)
+        self.scoreWidget = ScoreWidget(self.fixedWidth, self.fixedHeight)
+        self.infoWidget = InfoWidget(self.fixedWidth, self.fixedHeight)
+        self.paramsWidget = ParamsWidget(self.fixedWidth, self.fixedHeight)
 
         #Creating stacked widget
         self.stack = QtWidgets.QStackedWidget()
@@ -61,16 +63,18 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
     def loadMusic(self):
         # Generuje oceny na podstawie listen_count - wywołać tylko, jeżeli chcesz wygenerować ratingi
         # DatasetLoader().prepareDataset2()
-        self.songs, self.songs_ratings = DatasetLoader().loadDataset()
+        #self.songs, self.songs_ratings = DatasetLoader().loadDataset()
         #print(self.songs.head())
         #print(self.songs_ratings.head())
+        pass
 
     def showMenu(self):
         self.stack.setCurrentIndex(0)
 
     def startRecomendation(self):
         # TODO: na sztywno podajemy na razie CollaborativeFiltering
-        self._state = State(self._state, CollaborativeRecommender()) 
+        self._state = State(self._state, CollaborativeRecommender())
+        self.playerWidget.addRandomSongsInitially(self.fixedWidth, self.fixedHeight, self._state.getRecommender())
         self.stack.setCurrentIndex(1)
 
     def showScore(self):
