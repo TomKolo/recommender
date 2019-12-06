@@ -22,7 +22,7 @@ class PlayerWidget(QtWidgets.QWidget):
         self.menuButton.setFixedSize(width*0.2, height*0.08)
         self.menuButton.clicked.connect(self.showMenu)
 
-        self.nextIterationButton = QtWidgets.QPushButton("Przejdź do następnej itaracji")
+        self.nextIterationButton = QtWidgets.QPushButton("Następna iteracja >")
         self.nextIterationButton.setObjectName("PlayerButton")    
         self.nextIterationButton.setFixedSize(width*0.25, height*0.1)
         self.nextIterationButton.clicked.connect(self.showNextiteration)
@@ -30,7 +30,7 @@ class PlayerWidget(QtWidgets.QWidget):
 
         self.showScoreButton = QtWidgets.QPushButton("Podsumowanie iteracji")
         self.showScoreButton.setObjectName("PlayerButton")    
-        self.showScoreButton.setFixedSize(width*0.2, height*0.1)
+        self.showScoreButton.setFixedSize(width*0.25, height*0.1)
         self.showScoreButton.clicked.connect(self.showScore)
         self.showScoreButton.setEnabled(False)
 

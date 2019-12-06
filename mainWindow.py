@@ -78,8 +78,8 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.stack.setCurrentIndex(1)
 
     def showScore(self):
-        self.stack.setCurrentIndex(2)
         self.scoreWidget.updateAccuracyPlot()
+        self.stack.setCurrentIndex(2)
 
     def showInfo(self):
         self.stack.setCurrentIndex(3)
@@ -89,6 +89,9 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
 
     def getState(self):
         return self._state
+
+    def getPlayerWidget(self):
+        return self.playerWidget
 
 
 if __name__ == '__main__':
