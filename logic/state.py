@@ -29,4 +29,7 @@ class State():
 
     def getAccuracies(self):
         return self._accuracies
+
+    def getIterationNumber(self):
+        return self._iterationNo
     

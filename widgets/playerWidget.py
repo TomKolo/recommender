@@ -12,7 +12,7 @@ class PlayerWidget(QtWidgets.QWidget):
         self.height = height
 
         #Initialize widgets
-        self.titleLabel = QtWidgets.QLabel("Iteracja 1")
+        self.titleLabel = QtWidgets.QLabel()
         self.titleLabel.setObjectName("MenuLabel")
         self.subTitleLabel = QtWidgets.QLabel("Oceń poniższe utwory")
         self.subTitleLabel.setObjectName("PlayerLabel")
@@ -112,6 +112,7 @@ class PlayerWidget(QtWidgets.QWidget):
             return sum/5.0
 
     def addRandomSongsInitially(self, width, height, recommender):
+        self.titleLabel.setText("Iteracja 1")
         numOfSongs = len(recommender.songs.index)
         fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
         downloader = SampleDownloader()
@@ -130,6 +131,7 @@ class PlayerWidget(QtWidgets.QWidget):
     def initNewIteration(self, songs_titles, songs_artists, songs_ids):
         self.showScoreButton.setEnabled(False)
         self.nextIterationButton.setEnabled(False)
+        self.titleLabel.setText("Iteracja " + str(self.window().getState().getIterationNumber()+1))
         self.__songRatings = [-1 for x in range(0, 5)]
         for widget in self.__musicWidgets:
             self.layout.removeWidget(widget)
