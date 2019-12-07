@@ -90,9 +90,6 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
     def getState(self):
         return self._state
 
-    def getPlayerWidget(self):
-        return self.playerWidget
-
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

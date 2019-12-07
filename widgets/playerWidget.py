@@ -28,7 +28,7 @@ class PlayerWidget(QtWidgets.QWidget):
         self.nextIterationButton.clicked.connect(self.showNextiteration)
         self.nextIterationButton.setEnabled(False)
 
-        self.showScoreButton = QtWidgets.QPushButton("Podsumowanie iteracji")
+        self.showScoreButton = QtWidgets.QPushButton("Zakończ i podsumuj")
         self.showScoreButton.setObjectName("PlayerButton")    
         self.showScoreButton.setFixedSize(width*0.25, height*0.1)
         self.showScoreButton.clicked.connect(self.showScore)
@@ -128,6 +128,9 @@ class PlayerWidget(QtWidgets.QWidget):
             self.layout.addWidget(self.__musicWidgets[x])
 
     def initNewIteration(self, songs_titles, songs_artists, songs_ids):
+        self.showScoreButton.setEnabled(False)
+        self.nextIterationButton.setEnabled(False)
+        self.__songRatings = [-1 for x in range(0, 5)]
         for widget in self.__musicWidgets:
             self.layout.removeWidget(widget)
             widget.setParent(None)
