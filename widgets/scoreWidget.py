@@ -12,18 +12,17 @@ class ScoreWidget(QtWidgets.QWidget):
         grid = QtWidgets.QGridLayout()
         grid.setRowStretch(0, 2)
         grid.setRowStretch(1, 2)
-        grid.setRowStretch(2, 2)
-
+        
         exitButton = QtWidgets.QPushButton("Wróć do menu")
         exitButton.setObjectName("PlayerButton")    
         exitButton.setFixedSize(self.width*0.25, self.height*0.08)
         exitButton.clicked.connect(self.exitToMenu)
         grid.addWidget(exitButton, 0, 2, QtCore.Qt.AlignRight)
         
-        self.accuracyGraphWidget = pg.PlotWidget(title = 'Średnia ocen utworów w kolejnych iteracjach', size = 30)
-        self.accuracyGraphWidget.setLabel('bottom','Numer iteracji', size = 30)
-        self.accuracyGraphWidget.setLabel('left','Średnia ocen', size = 30)
-        self.accuracyGraphWidget.setBackground('w')
+        self.accuracyGraphWidget = pg.PlotWidget(title = 'Średnia ocen utworów w kolejnych iteracjach')
+        self.accuracyGraphWidget.setLabel('bottom','Numer iteracji')
+        self.accuracyGraphWidget.setLabel('left','Średnia ocen')
+        #self.accuracyGraphWidget.setBackground('w')
         grid.addWidget(self.accuracyGraphWidget, 1, 2)
 
         accuracyLayout = QtWidgets.QGridLayout()
@@ -41,12 +40,6 @@ class ScoreWidget(QtWidgets.QWidget):
         accuracyLayout.addWidget(self.accuracyButton, 2, 1, QtCore.Qt.AlignHCenter)
         grid.addLayout(accuracyLayout, 1, 1)
 
-        nextIterationButton = QtWidgets.QPushButton("Następna iteracja >")
-        nextIterationButton.setObjectName("PlayerButton")    
-        nextIterationButton.setFixedSize(width*0.25, height*0.08)
-        nextIterationButton.clicked.connect(self.showNextiteration)
-        grid.addWidget(nextIterationButton, 2, 2, QtCore.Qt.AlignHCenter)
-
         self.setLayout(grid)   
 
     def updateAccuracyPlot(self):
@@ -55,13 +48,9 @@ class ScoreWidget(QtWidgets.QWidget):
         y = self.window().getState().getAccuracies()
         dx = [(value, str(value)) for value in list((range(1, len(self.window().getState().getAccuracies()) + 1)))]
         self.accuracyGraphWidget.getAxis('bottom').setTicks([dx, []])
-        pen = pg.mkPen(color=(0, 0, 255), width = 15)
+        pen = pg.mkPen(color=(0, 0, 255), width = 3)
         self.accuracyPlot = self.accuracyGraphWidget.plot(x, y, symbol = 'o', pen=pen)
-        self.accuracyButton.setText(str(accuracyAvg) + "%")
-        print (self.window().getState().getAccuracies())
+        self.accuracyButton.setText(str(round(accuracyAvg)) + "%")
 
     def exitToMenu(self):
         self.window().showMenu()
-
-    def showNextiteration(self):
-        self.window().getPlayerWidget().showNextiteration()
