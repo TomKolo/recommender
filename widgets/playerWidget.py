@@ -12,7 +12,7 @@ class PlayerWidget(QtWidgets.QWidget):
         self.height = height
 
         #Initialize widgets
-        self.titleLabel = QtWidgets.QLabel("Iteracja 1")
+        self.titleLabel = QtWidgets.QLabel()
         self.titleLabel.setObjectName("MenuLabel")
         self.subTitleLabel = QtWidgets.QLabel("Oceń poniższe utwory")
         self.subTitleLabel.setObjectName("PlayerLabel")
@@ -22,15 +22,15 @@ class PlayerWidget(QtWidgets.QWidget):
         self.menuButton.setFixedSize(width*0.2, height*0.08)
         self.menuButton.clicked.connect(self.showMenu)
 
-        self.nextIterationButton = QtWidgets.QPushButton("Przejdź do następnej itaracji")
+        self.nextIterationButton = QtWidgets.QPushButton("Następna iteracja >")
         self.nextIterationButton.setObjectName("PlayerButton")    
         self.nextIterationButton.setFixedSize(width*0.25, height*0.1)
         self.nextIterationButton.clicked.connect(self.showNextiteration)
         self.nextIterationButton.setEnabled(False)
 
-        self.showScoreButton = QtWidgets.QPushButton("Podsumowanie iteracji")
+        self.showScoreButton = QtWidgets.QPushButton("Zakończ i podsumuj")
         self.showScoreButton.setObjectName("PlayerButton")    
-        self.showScoreButton.setFixedSize(width*0.2, height*0.1)
+        self.showScoreButton.setFixedSize(width*0.25, height*0.1)
         self.showScoreButton.clicked.connect(self.showScore)
         self.showScoreButton.setEnabled(False)
 
@@ -112,6 +112,7 @@ class PlayerWidget(QtWidgets.QWidget):
             return sum/5.0
 
     def addRandomSongsInitially(self, width, height, recommender):
+        self.titleLabel.setText("Iteracja 1")
         numOfSongs = len(recommender.songs.index)
         fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
         downloader = SampleDownloader()
@@ -128,6 +129,10 @@ class PlayerWidget(QtWidgets.QWidget):
             self.layout.addWidget(self.__musicWidgets[x])
 
     def initNewIteration(self, songs_titles, songs_artists, songs_ids):
+        self.showScoreButton.setEnabled(False)
+        self.nextIterationButton.setEnabled(False)
+        self.titleLabel.setText("Iteracja " + str(self.window().getState().getIterationNumber()+1))
+        self.__songRatings = [-1 for x in range(0, 5)]
         for widget in self.__musicWidgets:
             self.layout.removeWidget(widget)
             widget.setParent(None)
