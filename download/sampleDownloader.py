@@ -23,15 +23,22 @@ class SampleDownloader:
         params = {self.searchQueryKey : "{} {}".format(title, artist)}
         headers = {self.hostHeaderKey : self.hostHeaderValue, self.apiKeyHeaderKey : self.apiKeyHeaderValue}
         response = requests.get(self.searchUrl, params=params, headers=headers)
-        jsonResponse = response.json()
+        try:
+            jsonResponse = response.json()
         
-        if jsonResponse['data']:
-            sampleUrl = jsonResponse['data'][0]['preview']
-            return sampleUrl
-        else:
-            #raise Exception("Song {} of artist {} was not found".format(title, artist))
-           print("Song {} of artist {} was not found".format(title, artist))
-           return None
+            if 'data' in jsonResponse and jsonResponse['data']:
+                collection = jsonResponse['data']
+                for item in collection: 
+                    if item['duration'] > 200:
+                        return item['preview'];
+                return None
+            else:
+                #raise Exception("Song {} of artist {} was not found".format(title, artist))
+            #print("Song {} of artist {} was not found".format(title, artist))
+                return None
+        except:
+            print('Empty json response exception occurred')
+            return None
 
     def downloadSong(self, title, artist, songId):
         sampleUrl = self.__findSampleUrl(title, artist)
