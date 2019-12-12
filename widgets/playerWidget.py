@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import pandas as pd
 from widgets.musicWidget import MusicWidget
 from download.sampleDownloader import SampleDownloader
+import os 
 
 class PlayerWidget(QtWidgets.QWidget):
     def  __init__(self, width, height):
@@ -87,10 +88,12 @@ class PlayerWidget(QtWidgets.QWidget):
             self.nextIterationButton.setEnabled(True)
 
     def showScore(self):
+        self.removeAllDownloadedSamples()
         self.window().getState().addIteration(self.__calculateItarationAccuracy())
         self.window().showScore()
     
     def showNextiteration(self):
+        self.removeAllDownloadedSamples()
         self.window().getState().addIteration(self.__calculateItarationAccuracy())
         songs_titles, songs_artists, songs_ids = self.window().getState().getRecommender().recommend()
         self.initNewIteration(songs_titles, songs_artists, songs_ids)
@@ -151,23 +154,6 @@ class PlayerWidget(QtWidgets.QWidget):
             self.layout.addWidget(self.__musicWidgets[x])
         self.layout.update();
 
-    def initNewIterationDebug(self, recommender):
-        for widget in self.__musicWidgets:
-            self.layout.removeWidget(widget)
-            widget.setParent(None)
-        self.__musicWidgets.clear()
-        downloader = SampleDownloader()
-        numOfSongs = len(recommender.songs.index)
-        fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
-        for x in range(5):
-            titleOfSong = recommender.songs['title'].values[fiveUniqueRandomSongs[x]]
-            artistOfSong = recommender.songs['artist_name'].values[fiveUniqueRandomSongs[x]]
-            songId = recommender.songs['song_id'].values[fiveUniqueRandomSongs[x]]
-            result = downloader.downloadSong(titleOfSong, artistOfSong, songId)
-            if result:
-                filePath = "./data/samples/{}.mp3".format(songId)
-            else:
-                filePath =  "./data/samples/song1.mp3"
-            self.__musicWidgets.append(MusicWidget(self.width*0.99, self.height*0.1, x, filePath, self, titleOfSong, artistOfSong))
-            self.layout.addWidget(self.__musicWidgets[x])
-        self.layout.update();
+    def removeAllDownloadedSamples(self):
+        for file in os.scandir("./data/samples"):
+            os.unlink(file.path)
