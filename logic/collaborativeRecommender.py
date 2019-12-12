@@ -14,12 +14,12 @@ It inherits Recommender.
 class CollaborativeRecommender(Recommender):
 
     def __init__(self):
-        self.songs = pd.read_csv("./data/song_dataset.csv",encoding="Latin1")
+        self.songs = pd.read_csv("./data/songs_dataset.csv",encoding="Latin1")
         pass
 
 
     def importDataset(self, objectsToReturn):
-        Ratings = pd.read_csv("./data/fewer_songs_ratings.csv")
+        Ratings = pd.read_csv("./data/songs_ratings.csv")
 
         Mean = Ratings.groupby(by="userId",as_index=False)['rating'].mean()
         Rating_avg = pd.merge(Ratings,Mean,on='userId')
