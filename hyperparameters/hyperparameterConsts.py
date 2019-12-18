@@ -1,11 +1,11 @@
 import enum
 
 class DistanceAlgorithm(enum.Enum):
-    cosineSimilarity = 0
+    canberraDistance = 0
     cosineDistance = 1
     euclideanDistance = 2
-    haversineDistance = 3
-    manhattanDistance = 4
+    chebyshevDistance = 3
+    manhattanDistance = 4  #will add more soon
 
 class NNeighbours:
     defaultN = 30

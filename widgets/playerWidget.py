@@ -11,6 +11,7 @@ class PlayerWidget(QtWidgets.QWidget):
         super().__init__( flags = QtCore.Qt.Window )
         self.width = width
         self.height = height
+        self.liOfIterationSongsIds = []
 
         #Initialize widgets
         self.titleLabel = QtWidgets.QLabel()
@@ -63,7 +64,7 @@ class PlayerWidget(QtWidgets.QWidget):
 
         self.__musicWidgets = []
         self.__songRatings = [-1 for x in range(0, 5)]
-       
+
         self.layout.addLayout(self.bottomBarLayout)
 
         self.setLayout(self.layout)
@@ -83,7 +84,7 @@ class PlayerWidget(QtWidgets.QWidget):
 
     def songRated(self, id):
         self.__songRatings[id] = self.__musicWidgets[id].returnSongRating()
-        if(self.__allSongsRated()):
+        if(self.__allSongsRated()):    
             self.showScoreButton.setEnabled(True)
             self.nextIterationButton.setEnabled(True)
 
@@ -95,7 +96,14 @@ class PlayerWidget(QtWidgets.QWidget):
     def showNextiteration(self):
         self.removeAllDownloadedSamples()
         self.window().getState().addIteration(self.__calculateItarationAccuracy())
-        songs_titles, songs_artists, songs_ids = self.window().getState().getRecommender().recommend()
+        #add rated songs by current user to songs_ratings
+        for i in range(5):
+            liToAppend = [{'userId':str(self.window().getState().getUserIdToRecommend()),
+                                'songId':self.liOfIterationSongsIds[i],
+                                'rating':self.__songRatings[i]}]
+            dataToAppend = pd.DataFrame(liToAppend)
+            dataToAppend.to_csv("./data/filtered_songs_ratings.csv", mode='a', header=None, index=False) 
+        songs_titles, songs_artists, songs_ids = self.window().getState().getRecommender().recommend(self.window().getState().getUserIdToRecommend())
         self.initNewIteration(songs_titles, songs_artists, songs_ids)
 
     def showMenu(self):
@@ -119,10 +127,12 @@ class PlayerWidget(QtWidgets.QWidget):
         numOfSongs = len(recommender.songs.index)
         fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
         downloader = SampleDownloader()
+        self.liOfIterationSongsIds = []
         for x in range(5):
             titleOfSong = recommender.songs['title'].values[fiveUniqueRandomSongs[x]]
-            artistOfSong = recommender.songs['artist_name'].values[fiveUniqueRandomSongs[x]]
-            songId = recommender.songs['song_id'].values[fiveUniqueRandomSongs[x]]
+            artistOfSong = recommender.songs['artistName'].values[fiveUniqueRandomSongs[x]]
+            songId = recommender.songs['songId'].values[fiveUniqueRandomSongs[x]]
+            self.liOfIterationSongsIds.append(songId)
             result = downloader.downloadSong(titleOfSong, artistOfSong, songId)
             if result:
                 filePath = "./data/samples/{}.mp3".format(songId)
@@ -141,12 +151,14 @@ class PlayerWidget(QtWidgets.QWidget):
             widget.setParent(None)
         self.__musicWidgets.clear()
         downloader = SampleDownloader()
+        self.liOfIterationSongsIds = []
         for x in range(5):
             titleOfSong = songs_titles[x]
             artistOfSong = songs_artists[x]
             songId = songs_ids[x]
+            self.liOfIterationSongsIds.append(songId)
             result = downloader.downloadSong(titleOfSong, artistOfSong, songId)
-            if result:
+            if result: 
                 filePath = "./data/samples/{}.mp3".format(songId)
             else:
                 filePath =  "./data/samples/song1.mp3"

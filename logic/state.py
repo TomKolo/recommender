@@ -1,4 +1,6 @@
 import sys
+import pandas as pd
+
 """
 Class representing current state of recommendation.
 
@@ -9,10 +11,18 @@ It holds current recommender!
 class State():
 
     def __init__(self, previousState, recommender):
-         self._previousState = previousState
-         self._iterationNo = 0
-         self._accuracies = []
-         self._reccomender = recommender
+        self._previousState = previousState
+        self._iterationNo = 0
+        self._accuracies = []
+        self._reccomender = recommender
+
+        ratings = pd.read_csv("./data/filtered_songs_ratings.csv")
+        lastUserId = ratings.iloc[-1:].iloc[0][0]
+        #usersIds for which recommendation process will be carried out are simple integers
+        if lastUserId.isdigit(): 
+            self._userToRecommendId = int(lastUserId) + 1
+        else: 
+            self._userToRecommendId = 0
 
     def setRecommender(self, recommender):
         pass
@@ -32,4 +42,7 @@ class State():
 
     def getIterationNumber(self):
         return self._iterationNo
+
+    def getUserIdToRecommend(self):
+        return self._userToRecommendId
     

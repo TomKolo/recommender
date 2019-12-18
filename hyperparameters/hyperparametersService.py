@@ -1,20 +1,19 @@
 from hyperparameters.hyperparametersState import CollaborativeHyperparametersState
 from hyperparameters.hyperparameterConsts import DistanceAlgorithm
-from sklearn.metrics.pairwise import *
 
 class HyperparameterService:
-    def callDistanceAlgorithm(self, input):
+    def callDistanceAlgorithm(self):
         chosenAlgorithm = CollaborativeHyperparametersState().distanceAlgorithm;
-        if (chosenAlgorithm == DistanceAlgorithm.cosineSimilarity):
-            return cosine_similarity(input)
+        if (chosenAlgorithm == DistanceAlgorithm.canberraDistance):
+            return 'canberra'
         elif (chosenAlgorithm == DistanceAlgorithm.cosineDistance):
-            return cosine_distances(input)
+            return 'cosine'
         elif (chosenAlgorithm == DistanceAlgorithm.euclideanDistance):
-            return euclidean_distances(input)
-        elif (chosenAlgorithm == DistanceAlgorithm.haversineDistance):
-            return haversine_distances(input)
+            return 'euclidean'
+        elif (chosenAlgorithm == DistanceAlgorithm.chebyshevDistance):
+            return 'chebyshev'
         elif (chosenAlgorithm == DistanceAlgorithm.manhattanDistance):
-            return manhattan_distances(input)
+            return 'cityblock'
 
     def getNumberOfNeighbours(self):
         return CollaborativeHyperparametersState().numberOfNeighbours

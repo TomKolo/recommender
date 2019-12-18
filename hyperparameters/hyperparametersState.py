@@ -8,5 +8,5 @@ class Singleton(object):
         return cls._instance
 
 class CollaborativeHyperparametersState(Singleton):
-    distanceAlgorithm = hyperparameters.DistanceAlgorithm.cosineSimilarity
+    distanceAlgorithm = hyperparameters.DistanceAlgorithm.euclideanDistance
     numberOfNeighbours = hyperparameters.NNeighbours.defaultN

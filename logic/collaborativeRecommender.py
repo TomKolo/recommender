@@ -2,7 +2,7 @@
 import copy
 import pandas as pd
 import numpy as np
-from sklearn.metrics import pairwise_distances
+from scipy.spatial.distance import pdist, squareform
 from logic.recommender import Recommender
 from hyperparameters.hyperparametersService import HyperparameterService
 
@@ -14,188 +14,118 @@ It inherits Recommender.
 class CollaborativeRecommender(Recommender):
 
     def __init__(self):
-        self.songs = pd.read_csv("./data/songs_dataset.csv",encoding="Latin1")
-        pass
+        self.songs = pd.read_csv("./data/filtered_songs_data.csv",encoding="Latin1")
+
+    def importAndScaleRatings(self, objectsToReturn):
+        ratings = pd.read_csv("./data/filtered_songs_ratings.csv")
+
+        average = ratings.groupby(by="userId",as_index=False)['rating'].mean()
+        averageRatings = pd.merge(ratings,average,on='userId', suffixes=('', 'Scaled'))
+        averageRatings['ratingSubstr']=averageRatings['rating']-averageRatings['ratingScaled']
+        ratingsSubstr = pd.pivot_table(averageRatings,values='ratingSubstr',index='userId',columns='songId')
+
+        ratingsSubstrAvgUser = ratingsSubstr.apply(lambda row: row.fillna(row.mean()), axis=1)
+
+        objectsToReturn.append(ratingsSubstrAvgUser)
+        objectsToReturn.append(ratings)
 
 
-    def importDataset(self, objectsToReturn):
-        Ratings = pd.read_csv("./data/songs_ratings.csv")
+    def calcSimBetweenRecUserAndTheRest(self, objectsToReturn, ratingsSubstrAvgUser, userToRecommendId):
+        metricMethod = HyperparameterService().callDistanceAlgorithm()
+        listOfUsersIds = []
+        listOfSimilaritiesToRecUser = []
+        for index, row in ratingsSubstrAvgUser.iterrows():
+            if(index != str(userToRecommendId)):
+                simBetweenRecUserAndOtherUser = pdist(ratingsSubstrAvgUser.reindex([str(userToRecommendId), index]), metricMethod)[0]
+                listOfUsersIds.append(index)
+                listOfSimilaritiesToRecUser.append(simBetweenRecUserAndOtherUser)
 
-        Mean = Ratings.groupby(by="userId",as_index=False)['rating'].mean()
-        Rating_avg = pd.merge(Ratings,Mean,on='userId')
-        Rating_avg['adg_rating']=Rating_avg['rating_x']-Rating_avg['rating_y']
-        print( Rating_avg.head())
+        dictOfSimilaritiesBetweenRecUserAndTheRest = {'userId': listOfUsersIds, 'similarityToRecUser': listOfSimilaritiesToRecUser}
+        similaritiesBetweenRecUserAndTheRest = pd.DataFrame(dictOfSimilaritiesBetweenRecUserAndTheRest)
+        print('SIMILARITIES TO USER WITHOUT SORT')
+        print(similaritiesBetweenRecUserAndTheRest.head())
+        similaritiesBetweenRecUserAndTheRest.sort_values(by=['similarityToRecUser'], inplace=True)
+        objectsToReturn.append(similaritiesBetweenRecUserAndTheRest)
 
-        objectsToReturn.append(Rating_avg)
-        objectsToReturn.append(Mean)
+    def getFirstKneighborsForUser(self, objectsToReturn, k, similaritiesBetweenRecUserAndTheRest):
+        similaritiesBetweenRecUserAndTheRest.sort_values(by=['similarityToRecUser'], inplace=True)
+        firstNeighborsForUser = pd.DataFrame(similaritiesBetweenRecUserAndTheRest.head(k))
+        objectsToReturn.append(firstNeighborsForUser)
 
+    def getSongsTakenIntoProcess(self, objectsToReturn, firstNeighborsForUser, ratings, userToRecommendId):  
+        songsRatedByNeighborsLi = []
+        for index,row in firstNeighborsForUser.iterrows():
+            #get rows with songs rated by one user from neighbors
+            rowsWithRatedSongsByOneUser = pd.DataFrame(ratings.loc[ratings['userId'] == row['userId']])                                                                                            
+            songsRatedByNeighborsLi.extend(rowsWithRatedSongsByOneUser['songId'].tolist())
+        songsRatedByNeighborsLi = list(dict.fromkeys(songsRatedByNeighborsLi)) #delete duplicate songs
+        
+        #get rows with songs rated by user for which reccomendation will be carried out
+        rowsWithRatedSongsByRecUser = pd.DataFrame(ratings.loc[ratings['userId'] == str(userToRecommendId)])
+        songsRatedByRecUserLi = rowsWithRatedSongsByRecUser['songId'].tolist() 
 
-    def cleanTheData(self, objectsToReturn, Rating_avg):
-        check = pd.pivot_table(Rating_avg,values='rating_x',index='userId',columns='song_id')
-        print(check.head())
-        final = pd.pivot_table(Rating_avg,values='adg_rating',index='userId',columns='song_id')
-        print(final.head())
+        # we dont want to recommend the same songs that user has rated before
+        songsTakenIntoRecProcessLi = list(set(songsRatedByNeighborsLi) - set(songsRatedByRecUserLi))
+        objectsToReturn.append(songsTakenIntoRecProcessLi)
 
-        # Replacing NaN by Song Average
-        final_song= final.fillna(final.mean(axis=0))
+    def getRecommendedSongs(self, songsTakenIntoRecProcessLi, firstNeighborsForUser, ratingsSubstrAvgUser):
+        calcWeightedRatingsForSongs = []
+        simBetweenUsersSum = 0
+        firstLoopWithinNeighbors = True
+        for songId in songsTakenIntoRecProcessLi:
+            rUmultiSimUsum = 0
+            for index,row in firstNeighborsForUser.iterrows():
+                #get rating of some song given by user from neighbors
+                rU = ratingsSubstrAvgUser.loc[[row['userId']], [songId]].values[0][0]
+                #the inversion of distances because less distance implies higher similarity,
+                #+ 0.000001 because we dont want to divide by 0
+                simU = 1 / (row['similarityToRecUser'] + 0.000000001)
+                if firstLoopWithinNeighbors: simBetweenUsersSum += simU
+                rUmultiSimUsum += rU * simU
+            calcWeightedRatingForOneSong = rUmultiSimUsum/simBetweenUsersSum
+            calcWeightedRatingsForSongs.append(calcWeightedRatingForOneSong)
+            if firstLoopWithinNeighbors: firstLoopWithinNeighbors = False
+        songsWithWeightedRatings = pd.DataFrame({'songId':songsTakenIntoRecProcessLi,'weightedRating':calcWeightedRatingsForSongs})
 
-        # Replacing NaN by User Average
-        final_user = final.apply(lambda row: row.fillna(row.mean()), axis=1)
-        print(final_song.head())
-        print(final_user.head())
+        #get five best songs recommended to user
+        fiveBestSongsForRecUser = songsWithWeightedRatings.sort_values(by=['weightedRating'], ascending=False).head(5)
+        print(fiveBestSongsForRecUser)
 
-        objectsToReturn.append(check)
-        objectsToReturn.append(final_song)
-        objectsToReturn.append(final_user)
+        predictedSongsTitles = []
+        predictedSongsArtists = []
+        predictedSongsIds = []
+        for index,row in fiveBestSongsForRecUser.iterrows():
+            predictedSongTitle = self.songs.loc[self.songs['songId'] == row['songId'], 'title'].iloc[0]
+            predictedSongArtist = self.songs.loc[self.songs['songId'] == row['songId'], 'artistName'].iloc[0]
+            predictedSongsTitles.append(predictedSongTitle)
+            predictedSongsArtists.append(predictedSongArtist)
+            predictedSongsIds.append(row['songId'])
 
-
-    def calculateSimilarityBetweenTheUsers(self, objectsToReturn, final_user, final_song):  
-        # user similarity on replacing NAN by user avg
-        b = HyperparameterService().callDistanceAlgorithm(final_user)
-
-        np.fill_diagonal(b, 0 )
-        similarity_with_user = pd.DataFrame(b,index=final_user.index)
-        similarity_with_user.columns=final_user.index
-        print(similarity_with_user.head())
-
-        # user similarity on replacing NAN by item(song) avg
-        distanceAlgorithm = HyperparameterService().callDistanceAlgorithm(final_song)
-        np.fill_diagonal(distanceAlgorithm, 0 )
-        similarity_with_song = pd.DataFrame(distanceAlgorithm,index=final_song.index)
-        similarity_with_song.columns=final_user.index
-        print(similarity_with_song.head())
-
-        objectsToReturn.append(similarity_with_user)
-        objectsToReturn.append(similarity_with_song)
-
-    def findNneighbours(self, df, n):
-        order = np.argsort(df.values, axis=1)[:, :n]
-        df = df.apply(lambda x: pd.Series(x.sort_values(ascending=False)
-               .iloc[:n].index, 
-              index=['top{}'.format(i) for i in range(1, n+1)]), axis=1)
-        return df
-
-    
-    def findNneighboursForEachUser(self, numberOfNeighbours, objectsToReturn, similarity_with_user, similarity_with_song):
-        sim_user_N_user = self.findNneighbours(similarity_with_user,numberOfNeighbours)
-        print(sim_user_N_user.head())
-
-        sim_user_N_song = self.findNneighbours(similarity_with_song,numberOfNeighbours)
-        print(sim_user_N_song.head())
-
-        objectsToReturn.append(sim_user_N_user)
-        objectsToReturn.append(sim_user_N_song)
-
-
-    def getUserSimilarSongs(self, user1, user2, Rating_avg):
-        common_songs = Rating_avg[Rating_avg.userId == user1].merge(
-        Rating_avg[Rating_avg.userId == user2],
-        on = "song_id",
-        how = "inner" )
-        return common_songs.merge( self.songs, on = 'song_id' )
-
-    def userItemScore(self, user, item,
-                        sim_user_N_song, final_song,
-                        Mean, similarity_with_song):
-        a = sim_user_N_song[sim_user_N_song.index==user].values
-        b = a.squeeze().tolist()
-        c = final_song.loc[:,item]
-        d = c[c.index.isin(b)]
-        f = d[d.notnull()]
-        avg_user = Mean.loc[Mean['userId'] == user,'rating'].values[0]
-        index = f.index.values.squeeze().tolist()
-        corr = similarity_with_song.loc[user,index]
-        fin = pd.concat([f, corr], axis=1)
-        fin.columns = ['adg_score','correlation']
-        fin['score']=fin.apply(lambda x:x['adg_score'] * x['correlation'],axis=1)
-        nume = fin['score'].sum()
-        deno = fin['correlation'].sum()
-        final_score = avg_user + (nume/deno)
-        return final_score
-
-
-    def userItemRecommendedSongs(self, user, check, sim_user_N_song, Song_user, 
-                                 final_song, Mean, similarity_with_song):
-        Song_listened_by_user = check.columns[check[check.index==user].notna().any()].tolist()
-        a = sim_user_N_song[sim_user_N_song.index==user].values
-        b = a.squeeze().tolist()
-        d = Song_user[Song_user.index.isin(b)]
-        l = ','.join(d.values)
-        Song_listened_by_similar_users = l.split(',')
-        Songs_under_consideration = list(set(Song_listened_by_similar_users)-set(list(map(str, Song_listened_by_user))))
-        Songs_under_consideration = list(map(str, Songs_under_consideration)) #was int in the first parameter before
-        score = []
-        for item in Songs_under_consideration:
-            c = final_song.loc[:,item]
-            d = c[c.index.isin(b)]
-            f = d[d.notnull()]
-            avg_user = Mean.loc[Mean['userId'] == user,'rating'].values[0]
-            index = f.index.values.squeeze().tolist()
-            corr = similarity_with_song.loc[user,index]
-            fin = pd.concat([f, corr], axis=1)
-            fin.columns = ['adg_score','correlation']
-            fin['score']=fin.apply(lambda x:x['adg_score'] * x['correlation'],axis=1)
-            nume = fin['score'].sum()
-            deno = fin['correlation'].sum()
-            final_score = avg_user + (nume/deno)
-            score.append(final_score)
-        data = pd.DataFrame({'song_id':Songs_under_consideration,'score':score})
-        top_5_recommendation = data.sort_values(by='score',ascending=False).head(5)
-        Song_Name = top_5_recommendation.merge(self.songs, how='inner', on='song_id')
-        Song_Names = Song_Name.title.values.tolist()
-        Artist_Names = Song_Name.artist_name.values.tolist()
-        Song_Ids = Song_Name.song_id.values.tolist()
-        return Song_Names, Artist_Names, Song_Ids
-
-
-    def getRecommendedSongs(self, Rating_avg, check, sim_user_N_song,
-                           final_song, Mean, similarity_with_song):
-        Rating_avg = Rating_avg.astype({"song_id": str})
-        Song_user = Rating_avg.groupby(by = 'userId')['song_id'].apply(lambda x:','.join(x))
-        user = '950a62197ab5b48aecfc728649b1b84f35a096bd' #the user for which we're recommending
-        predicted_songs, predicted_songs_artists, predicted_songs_ids = self.userItemRecommendedSongs(user, check, sim_user_N_song,
-                                                        Song_user, final_song, 
-                                                        Mean, similarity_with_song)
-        print("RECOMMENDATIONS for some user: ")
         cnt = 0
-        for i in predicted_songs:
-            print('{0} - {1}'.format(i, predicted_songs_artists[cnt]))
+        for i in predictedSongsTitles:
+            print('{0} - {1} + ID: {2}'.format(i, predictedSongsArtists[cnt], predictedSongsIds[cnt]))
             cnt += 1
-        return predicted_songs, predicted_songs_artists, predicted_songs_ids
 
-    def recommend(self):
-        objectsToReturn = []
-        self.importDataset(objectsToReturn)
-        Rating_avg = copy.deepcopy(objectsToReturn[0])
-        Mean = copy.deepcopy(objectsToReturn[1])
+        return predictedSongsTitles, predictedSongsArtists, predictedSongsIds
 
+    def recommend(self, userToRecommendId):
         objectsToReturn = []
-        self.cleanTheData(objectsToReturn, Rating_avg)
-        check = copy.deepcopy(objectsToReturn[0])
-        final_user = copy.deepcopy(objectsToReturn[1])
-        final_song = copy.deepcopy(objectsToReturn[2])
-
+        self.importAndScaleRatings(objectsToReturn)
+        ratingsSubstrAvgUser = copy.deepcopy(objectsToReturn[0])
+        ratings = copy.deepcopy(objectsToReturn[1])
+        
         objectsToReturn = []
-        self.calculateSimilarityBetweenTheUsers(objectsToReturn, final_user, final_song)
-        similarity_with_user = copy.deepcopy(objectsToReturn[0])
-        similarity_with_song = copy.deepcopy(objectsToReturn[1])
+        self.calcSimBetweenRecUserAndTheRest(objectsToReturn, ratingsSubstrAvgUser, userToRecommendId)
+        similaritiesBetweenRecUserAndTheRest = copy.deepcopy(objectsToReturn[0])
 
         objectsToReturn = []
         numberOfNeighbours = HyperparameterService().getNumberOfNeighbours();
-        self.findNneighboursForEachUser(numberOfNeighbours, objectsToReturn, similarity_with_user, similarity_with_song)
-        sim_user_N_user = copy.deepcopy(objectsToReturn[0])
-        sim_user_N_song = copy.deepcopy(objectsToReturn[1])
+        self.getFirstKneighborsForUser(objectsToReturn, numberOfNeighbours, similaritiesBetweenRecUserAndTheRest)
+        firstNeighborsForUser = copy.deepcopy(objectsToReturn[0])
 
-       # a = self.getUserSimilarSongs(370,86309, Rating_avg)
-       # a = a.loc[ : , ['rating_x_x','rating_x_y','title']]
-        #print(a.head())
+        objectsToReturn = []
+        self.getSongsTakenIntoProcess(objectsToReturn, firstNeighborsForUser, ratings, userToRecommendId)
+        songsTakenIntoRecProcessLi = copy.deepcopy(objectsToReturn[0])
 
-        partialScore = self.userItemScore('950a62197ab5b48aecfc728649b1b84f35a096bd', 'SORHJAS12AB0187D3F', 
-                                          sim_user_N_song, 
-                                          final_song, 
-                                          Mean,
-                                          similarity_with_song)
-        print("Partial score (u,i) is", partialScore)
-
-        return self.getRecommendedSongs(Rating_avg, check, sim_user_N_song, final_song, Mean, similarity_with_song)
+        return self.getRecommendedSongs(songsTakenIntoRecProcessLi, firstNeighborsForUser, ratingsSubstrAvgUser)
 

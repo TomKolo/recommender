@@ -46,6 +46,7 @@ class ParamsWidget(QtWidgets.QWidget):
 
     def saveAndExit(self):
         CollaborativeHyperparametersState().distanceAlgorithm = self.currentlyChosenAlgorithm
+        print("setting distance {}".format(self.currentlyChosenAlgorithm))
         n = self.nInput.text()
         if n and n.isdigit():
             print("setting number {}".format(n))
@@ -65,11 +66,11 @@ class ParamsWidget(QtWidgets.QWidget):
         distanceLabel.setObjectName('ParamLabel')
         distanceBox.addWidget(distanceLabel, 0, 0)
 
-        cosineSimilarityRadiobutton = QRadioButton("Cosine similarity")
-        cosineSimilarityRadiobutton.algorithm = DistanceAlgorithm.cosineSimilarity
-        cosineSimilarityRadiobutton.toggled.connect(self.algorithmSelectionChanged)
-        self.setChecked(cosineSimilarityRadiobutton)
-        distanceBox.addWidget(cosineSimilarityRadiobutton, 1, 0)
+        canberraRadiobutton = QRadioButton("Canberra Distance")
+        canberraRadiobutton.algorithm = DistanceAlgorithm.canberraDistance
+        canberraRadiobutton.toggled.connect(self.algorithmSelectionChanged)
+        self.setChecked(canberraRadiobutton)
+        distanceBox.addWidget(canberraRadiobutton, 1, 0)
 
         euclideanRadiobutton = QRadioButton("Euclidean distance")
         euclideanRadiobutton.algorithm = DistanceAlgorithm.euclideanDistance
@@ -89,11 +90,11 @@ class ParamsWidget(QtWidgets.QWidget):
         self.setChecked(manhattanRadiobutton)
         distanceBox.addWidget(manhattanRadiobutton, 4, 0)
 
-        haversineRadiobutton = QRadioButton("Haversine distance")
-        haversineRadiobutton.algorithm = DistanceAlgorithm.haversineDistance
-        haversineRadiobutton.toggled.connect(self.algorithmSelectionChanged) 
-        self.setChecked(haversineRadiobutton)
-        distanceBox.addWidget(haversineRadiobutton, 5, 0)
+        chebyshevRadiobutton = QRadioButton("Chebyshev distance")
+        chebyshevRadiobutton.algorithm = DistanceAlgorithm.chebyshevDistance
+        chebyshevRadiobutton.toggled.connect(self.algorithmSelectionChanged) 
+        self.setChecked(chebyshevRadiobutton)
+        distanceBox.addWidget(chebyshevRadiobutton, 5, 0)
 
         return distanceBox
 
