@@ -88,6 +88,16 @@ class PlayerWidget(QtWidgets.QWidget):
             self.showScoreButton.setEnabled(True)
             self.nextIterationButton.setEnabled(True)
 
+    def appendNewUserRatings(self):
+        userIdToRecommendId = self.window().getState().getRecommender().getUserIdToRecommend()
+        #add rated songs by current user to songs_ratings
+        for i in range(5):
+            liToAppend = [{'userId':str(userIdToRecommendId),
+                                'songId':self.liOfIterationSongsIds[i],
+                                'rating':self.__songRatings[i]}]
+            dataToAppend = pd.DataFrame(liToAppend)
+            dataToAppend.to_csv("./data/filtered_songs_ratings.csv", mode='a', header=None, index=False) 
+
     def showScore(self):
         self.removeAllDownloadedSamples()
         self.window().getState().addIteration(self.__calculateItarationAccuracy())
@@ -96,14 +106,8 @@ class PlayerWidget(QtWidgets.QWidget):
     def showNextiteration(self):
         self.removeAllDownloadedSamples()
         self.window().getState().addIteration(self.__calculateItarationAccuracy())
-        #add rated songs by current user to songs_ratings
-        for i in range(5):
-            liToAppend = [{'userId':str(self.window().getState().getUserIdToRecommend()),
-                                'songId':self.liOfIterationSongsIds[i],
-                                'rating':self.__songRatings[i]}]
-            dataToAppend = pd.DataFrame(liToAppend)
-            dataToAppend.to_csv("./data/filtered_songs_ratings.csv", mode='a', header=None, index=False) 
-        songs_titles, songs_artists, songs_ids = self.window().getState().getRecommender().recommend(self.window().getState().getUserIdToRecommend())
+        self.appendNewUserRatings()
+        songs_titles, songs_artists, songs_ids = self.window().getState().getRecommender().recommend()
         self.initNewIteration(songs_titles, songs_artists, songs_ids)
 
     def showMenu(self):
@@ -122,12 +126,38 @@ class PlayerWidget(QtWidgets.QWidget):
                 sum = sum + self.__songRatings[x]
             return sum/5.0
 
+    def clearPlayerElements(self):
+        for widget in self.__musicWidgets:
+            self.layout.removeWidget(widget)
+            widget.setParent(None)
+        self.__musicWidgets.clear()
+        self.showScoreButton.setEnabled(False)
+        self.nextIterationButton.setEnabled(False)
+        self.__songRatings = [-1 for x in range(0, 5)]
+
+    def getFiveUniqueRandomSongs(self, recommender):
+        ratings = pd.read_csv("./data/filtered_songs_ratings.csv")
+        fiveUniqueRandomSongs = None
+        numOfSongs = len(recommender.songs.index)
+        someSongRatedByUser = True
+        while(someSongRatedByUser):
+            fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
+            for x in range(5):
+                songId = recommender.songs['songId'].values[fiveUniqueRandomSongs[x]]
+                songListenedByRecUser = ratings.loc[(ratings['songId'] == songId) & 
+                            (ratings['userId'] == recommender.getUserIdToRecommend())]
+                # cannot add song which was rated by user before
+                if songListenedByRecUser.empty == False:
+                    break
+                someSongRatedByUser = False
+        return fiveUniqueRandomSongs
+
     def addRandomSongsInitially(self, width, height, recommender):
         self.titleLabel.setText("Iteracja 1")
-        numOfSongs = len(recommender.songs.index)
-        fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
+        self.clearPlayerElements()
+        fiveUniqueRandomSongs = self.getFiveUniqueRandomSongs(recommender)
         downloader = SampleDownloader()
-        self.liOfIterationSongsIds = []
+        self.liOfIterationSongsIds = []     
         for x in range(5):
             titleOfSong = recommender.songs['title'].values[fiveUniqueRandomSongs[x]]
             artistOfSong = recommender.songs['artistName'].values[fiveUniqueRandomSongs[x]]
@@ -142,14 +172,8 @@ class PlayerWidget(QtWidgets.QWidget):
             self.layout.addWidget(self.__musicWidgets[x])
 
     def initNewIteration(self, songs_titles, songs_artists, songs_ids):
-        self.showScoreButton.setEnabled(False)
-        self.nextIterationButton.setEnabled(False)
         self.titleLabel.setText("Iteracja " + str(self.window().getState().getIterationNumber()+1))
-        self.__songRatings = [-1 for x in range(0, 5)]
-        for widget in self.__musicWidgets:
-            self.layout.removeWidget(widget)
-            widget.setParent(None)
-        self.__musicWidgets.clear()
+        self.clearPlayerElements()
         downloader = SampleDownloader()
         self.liOfIterationSongsIds = []
         for x in range(5):

@@ -14,6 +14,7 @@ It inherits Recommender.
 class CollaborativeRecommender(Recommender):
 
     def __init__(self):
+        super(CollaborativeRecommender, self).__init__()
         self.songs = pd.read_csv("./data/filtered_songs_data.csv",encoding="Latin1")
 
     def importAndScaleRatings(self, objectsToReturn):
@@ -30,13 +31,13 @@ class CollaborativeRecommender(Recommender):
         objectsToReturn.append(ratings)
 
 
-    def calcSimBetweenRecUserAndTheRest(self, objectsToReturn, ratingsSubstrAvgUser, userToRecommendId):
+    def calcSimBetweenRecUserAndTheRest(self, objectsToReturn, ratingsSubstrAvgUser):
         metricMethod = HyperparameterService().callDistanceAlgorithm()
         listOfUsersIds = []
         listOfSimilaritiesToRecUser = []
         for index, row in ratingsSubstrAvgUser.iterrows():
-            if(index != str(userToRecommendId)):
-                simBetweenRecUserAndOtherUser = pdist(ratingsSubstrAvgUser.reindex([str(userToRecommendId), index]), metricMethod)[0]
+            if(index != str(self.getUserIdToRecommend())):
+                simBetweenRecUserAndOtherUser = pdist(ratingsSubstrAvgUser.reindex([str(self.getUserIdToRecommend()), index]), metricMethod)[0]
                 listOfUsersIds.append(index)
                 listOfSimilaritiesToRecUser.append(simBetweenRecUserAndOtherUser)
 
@@ -52,7 +53,7 @@ class CollaborativeRecommender(Recommender):
         firstNeighborsForUser = pd.DataFrame(similaritiesBetweenRecUserAndTheRest.head(k))
         objectsToReturn.append(firstNeighborsForUser)
 
-    def getSongsTakenIntoProcess(self, objectsToReturn, firstNeighborsForUser, ratings, userToRecommendId):  
+    def getSongsTakenIntoProcess(self, objectsToReturn, firstNeighborsForUser, ratings):  
         songsRatedByNeighborsLi = []
         for index,row in firstNeighborsForUser.iterrows():
             #get rows with songs rated by one user from neighbors
@@ -61,7 +62,7 @@ class CollaborativeRecommender(Recommender):
         songsRatedByNeighborsLi = list(dict.fromkeys(songsRatedByNeighborsLi)) #delete duplicate songs
         
         #get rows with songs rated by user for which reccomendation will be carried out
-        rowsWithRatedSongsByRecUser = pd.DataFrame(ratings.loc[ratings['userId'] == str(userToRecommendId)])
+        rowsWithRatedSongsByRecUser = pd.DataFrame(ratings.loc[ratings['userId'] == str(self.getUserIdToRecommend())])
         songsRatedByRecUserLi = rowsWithRatedSongsByRecUser['songId'].tolist() 
 
         # we dont want to recommend the same songs that user has rated before
@@ -78,7 +79,7 @@ class CollaborativeRecommender(Recommender):
                 #get rating of some song given by user from neighbors
                 rU = ratingsSubstrAvgUser.loc[[row['userId']], [songId]].values[0][0]
                 #the inversion of distances because less distance implies higher similarity,
-                #+ 0.000001 because we dont want to divide by 0
+                #+ 0.000000001 because we dont want to divide by 0 (when similarity is 0)
                 simU = 1 / (row['similarityToRecUser'] + 0.000000001)
                 if firstLoopWithinNeighbors: simBetweenUsersSum += simU
                 rUmultiSimUsum += rU * simU
@@ -108,14 +109,14 @@ class CollaborativeRecommender(Recommender):
 
         return predictedSongsTitles, predictedSongsArtists, predictedSongsIds
 
-    def recommend(self, userToRecommendId):
+    def recommend(self):
         objectsToReturn = []
         self.importAndScaleRatings(objectsToReturn)
         ratingsSubstrAvgUser = copy.deepcopy(objectsToReturn[0])
         ratings = copy.deepcopy(objectsToReturn[1])
         
         objectsToReturn = []
-        self.calcSimBetweenRecUserAndTheRest(objectsToReturn, ratingsSubstrAvgUser, userToRecommendId)
+        self.calcSimBetweenRecUserAndTheRest(objectsToReturn, ratingsSubstrAvgUser)
         similaritiesBetweenRecUserAndTheRest = copy.deepcopy(objectsToReturn[0])
 
         objectsToReturn = []
@@ -124,7 +125,7 @@ class CollaborativeRecommender(Recommender):
         firstNeighborsForUser = copy.deepcopy(objectsToReturn[0])
 
         objectsToReturn = []
-        self.getSongsTakenIntoProcess(objectsToReturn, firstNeighborsForUser, ratings, userToRecommendId)
+        self.getSongsTakenIntoProcess(objectsToReturn, firstNeighborsForUser, ratings)
         songsTakenIntoRecProcessLi = copy.deepcopy(objectsToReturn[0])
 
         return self.getRecommendedSongs(songsTakenIntoRecProcessLi, firstNeighborsForUser, ratingsSubstrAvgUser)

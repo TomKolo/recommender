@@ -51,8 +51,9 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.setWindowIcon(QtGui.QIcon("./data/icons/mainWindowIcon.png"))
         self.setCentralWidget(self.stack)
 
-        #Initialize state variable
         self._state = None
+        #There is one userIdToRecommend for one window (that implies one recommender for one window and so on one state for one window)
+        self._state = State(self._state, CollaborativeRecommender())
 
     def loadStyleSheet(self):
         with open ("styleSheet.txt", "r") as stylesFile:
@@ -70,8 +71,6 @@ class RecommenderViewer( QtWidgets.QMainWindow ):
         self.stack.setCurrentIndex(0)
 
     def startRecomendation(self):
-        # TODO: na sztywno podajemy na razie CollaborativeFiltering
-        self._state = State(self._state, CollaborativeRecommender())
         self.playerWidget.addRandomSongsInitially(self.fixedWidth, self.fixedHeight, self._state.getRecommender())
         self.stack.setCurrentIndex(1)
 
