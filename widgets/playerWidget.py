@@ -139,17 +139,20 @@ class PlayerWidget(QtWidgets.QWidget):
         ratings = pd.read_csv("./data/filtered_songs_ratings.csv")
         fiveUniqueRandomSongs = None
         numOfSongs = len(recommender.songs.index)
-        someSongRatedByUser = True
-        while(someSongRatedByUser):
+        allSongsRatedByUser = True
+        while(allSongsRatedByUser):
             fiveUniqueRandomSongs = random.sample(range(1, numOfSongs), 5)
+            someSongRatedByUser = False
             for x in range(5):
                 songId = recommender.songs['songId'].values[fiveUniqueRandomSongs[x]]
                 songListenedByRecUser = ratings.loc[(ratings['songId'] == songId) & 
                             (ratings['userId'] == recommender.getUserIdToRecommend())]
                 # cannot add song which was rated by user before
                 if songListenedByRecUser.empty == False:
+                    someSongRatedByUser = True
                     break
-                someSongRatedByUser = False
+            if someSongRatedByUser == False:
+                allSongsRatedByUser = False
         return fiveUniqueRandomSongs
 
     def addRandomSongsInitially(self, width, height, recommender):
