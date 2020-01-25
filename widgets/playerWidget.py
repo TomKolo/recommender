@@ -170,7 +170,7 @@ class PlayerWidget(QtWidgets.QWidget):
             if result:
                 filePath = "./data/samples/{}.mp3".format(songId)
             else:
-                filePath =  "./data/samples/song1.mp3"
+                filePath =  "./data/song1.mp3"
             self.__musicWidgets.append(MusicWidget(width*0.99, height*0.1, x, filePath, self, titleOfSong, artistOfSong))
             self.layout.addWidget(self.__musicWidgets[x])
 

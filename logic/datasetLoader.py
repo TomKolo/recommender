@@ -35,8 +35,10 @@ class DatasetLoader:
         songs_ratings.to_csv("./data/songs_ratings.csv", index = False)
 
     def drawPlots(self):
-        userSongsRatings = pd.read_csv("./data/filtered_ratings.csv")
-        userMeanRating = userSongsRatings.groupby(by = "userId")['rating'].mean().round(1).reset_index(name = 'mean_rating')
+
+        plt.rc('font', size=16) 
+        #userSongsRatings = pd.read_csv("./data/filtered_ratings.csv")
+        userMeanRating = self.songsRatings.groupby(by = "userId")['rating'].mean().round(1).reset_index(name = 'mean_rating')
         totalListeners = userMeanRating.groupby(by = "mean_rating")['userId'].count().reset_index(name = 'listeners_count')
         plot = totalListeners.plot(kind = 'bar', x = 'mean_rating', y = 'listeners_count', title = 'Średnia ocena piosenek dokonana przez użytkowników', legend = False)
         plot.set_xlabel("Średnia ocena")
@@ -59,7 +61,7 @@ class DatasetLoader:
 
 
     def loadDataset(self):
-        self.songs = pd.read_csv("./data/songs_dataset.csv", encoding = "Latin1")
-        self.songsRatings = pd.read_csv("./data/songs_ratings.csv", encoding = "Latin1")
-        self.drawPlots()
+        self.songs = pd.read_csv("./data/filtered_songs_data.csv", encoding = "Latin1")
+        self.songsRatings = pd.read_csv("./data/filtered_songs_ratings.csv", encoding = "Latin1")
+        #self.drawPlots()
         return self.songs, self.songsRatings
