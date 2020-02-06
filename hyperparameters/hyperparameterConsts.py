@@ -10,4 +10,7 @@ class DistanceAlgorithm(enum.Enum):
 class NNeighbours:
     defaultN = 30
 
+class IterationsNumber:
+    iterationsNumber = 6
+
 

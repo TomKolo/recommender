@@ -5,6 +5,7 @@ import pandas as pd
 from widgets.musicWidget import MusicWidget
 from download.sampleDownloader import SampleDownloader
 import os 
+from hyperparameters.hyperparameterConsts import IterationsNumber
 
 class PlayerWidget(QtWidgets.QWidget):
     def  __init__(self, width, height):
@@ -156,7 +157,8 @@ class PlayerWidget(QtWidgets.QWidget):
         return fiveUniqueRandomSongs
 
     def addRandomSongsInitially(self, width, height, recommender):
-        self.titleLabel.setText("Iteracja 1")
+        text = "Iteracja 1/{}".format(IterationsNumber.iterationsNumber);
+        self.titleLabel.setText(text)
         self.clearPlayerElements()
         fiveUniqueRandomSongs = self.getFiveUniqueRandomSongs(recommender)
         downloader = SampleDownloader()
@@ -175,8 +177,13 @@ class PlayerWidget(QtWidgets.QWidget):
             self.layout.addWidget(self.__musicWidgets[x])
 
     def initNewIteration(self, songs_titles, songs_artists, songs_ids):
-        self.titleLabel.setText("Iteracja " + str(self.window().getState().getIterationNumber()+1))
+        iterationNumber = self.window().getState().getIterationNumber()+1
+        self.titleLabel.setText("Iteracja " + str(iterationNumber) + "/"+str(IterationsNumber.iterationsNumber))
         self.clearPlayerElements()
+
+        if iterationNumber == IterationsNumber.iterationsNumber:
+            self.setEnvironmentForLastIteration()
+
         downloader = SampleDownloader()
         self.liOfIterationSongsIds = []
         for x in range(5):
@@ -196,3 +203,7 @@ class PlayerWidget(QtWidgets.QWidget):
     def removeAllDownloadedSamples(self):
         for file in os.scandir("./data/samples"):
             os.unlink(file.path)
+
+    def setEnvironmentForLastIteration(self):
+        self.layout.removeWidget(self.nextIterationButton)
+        self.nextIterationButton.setParent(None)
