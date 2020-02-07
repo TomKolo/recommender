@@ -18,7 +18,7 @@ class MenuWidget(QtWidgets.QWidget):
         self.startButton.setFixedSize(width*0.8, height*0.2)
         self.startButton.clicked.connect(self.startRecomendation)
 
-        self.showParamsButton = QtWidgets.QPushButton("Edytuj hiperparametry algorytmów")
+        self.showParamsButton = QtWidgets.QPushButton("Edytuj hiperparametry algorytmu")
         self.showParamsButton.setObjectName("MenuButton")    
         self.showParamsButton.setFixedSize(width*0.8, height*0.2)
         self.showParamsButton.clicked.connect(self.showParams)

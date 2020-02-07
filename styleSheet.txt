@@ -4,5 +4,8 @@ QLabel#MenuLabel { font-size: 32px; font: bold; text-align: center;}
 QLabel#PlayerLabel { font-size: 20px; font: bold; text-align: center;}
 QLabel#MusicLabel { font-size: 20px; text-align: center; }
 QLabel#ParamLabel { font-size: 22px; font: bold; text-align: center;}
+QLabel#InfoTitleLabel { font-size: 32px; font-weight: bold; color: blue;}
+QLabel#InfoLabel { font-size: 18px; font-weight: bold}
+QLabel#InfoSecLabel { font-size: 18px;}
 QLineEdit#NInput { max-width: 90px; margin-bottom: 40px }
 QPushButton#AccuracyButton { background-color: #54d0d9; border: 2px solid black; border-radius: 60px; font-size: 35px; color: black;}
