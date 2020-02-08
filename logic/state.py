@@ -12,7 +12,7 @@ class State():
 
     def __init__(self, previousState, recommender):
         self._previousState = previousState
-        self._iterationNo = 0
+        self._iterationNo = 1
         self._accuracies = []
         self._reccomender = recommender
 
@@ -34,4 +34,7 @@ class State():
 
     def getIterationNumber(self):
         return self._iterationNo
+
+    def setIterationNumber(self, number):
+        self._iterationNo = number
     

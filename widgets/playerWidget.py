@@ -157,7 +157,10 @@ class PlayerWidget(QtWidgets.QWidget):
         return fiveUniqueRandomSongs
 
     def addRandomSongsInitially(self, width, height, recommender):
-        text = "Iteracja 1/{}".format(IterationsNumber.iterationsNumber);
+        self.bottomBarLayout.addWidget(self.nextIterationButton)
+        self.nextIterationButton.setEnabled(False)
+        iterationNumber = self.window().getState().getIterationNumber()
+        text = "Iteracja {}/{}".format(iterationNumber, IterationsNumber.iterationsNumber);
         self.titleLabel.setText(text)
         self.clearPlayerElements()
         fiveUniqueRandomSongs = self.getFiveUniqueRandomSongs(recommender)
@@ -177,7 +180,7 @@ class PlayerWidget(QtWidgets.QWidget):
             self.layout.addWidget(self.__musicWidgets[x])
 
     def initNewIteration(self, songs_titles, songs_artists, songs_ids):
-        iterationNumber = self.window().getState().getIterationNumber()+1
+        iterationNumber = self.window().getState().getIterationNumber()
         self.titleLabel.setText("Iteracja " + str(iterationNumber) + "/"+str(IterationsNumber.iterationsNumber))
         self.clearPlayerElements()
 
@@ -207,3 +210,4 @@ class PlayerWidget(QtWidgets.QWidget):
     def setEnvironmentForLastIteration(self):
         self.layout.removeWidget(self.nextIterationButton)
         self.nextIterationButton.setParent(None)
+        self.window().getState().setIterationNumber(0)
