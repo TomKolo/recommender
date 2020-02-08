@@ -71,19 +71,21 @@ class CollaborativeRecommender(Recommender):
 
     def getRecommendedSongs(self, songsTakenIntoRecProcessLi, firstNeighborsForUser, ratingsSubstrAvgUser):
         calcWeightedRatingsForSongs = []
+        simBetweenUsersSum = 0
+        firstLoopWithinNeighbors = True
         for songId in songsTakenIntoRecProcessLi:
             rUmultiSimUsum = 0
-            simBetweenUsersSum = 0
             for index,row in firstNeighborsForUser.iterrows():
                 #get rating of some song given by user from neighbors
                 rU = ratingsSubstrAvgUser.loc[[row['userId']], [songId]].values[0][0]
                 #the inversion of distances because less distance implies higher similarity,
                 #+ 0.000000001 because we dont want to divide by 0 (when similarity is 0)
                 simU = 1 / (row['similarityToRecUser'] + 0.000000001)
-                simBetweenUsersSum += simU
+                if firstLoopWithinNeighbors: simBetweenUsersSum += simU
                 rUmultiSimUsum += rU * simU
             calcWeightedRatingForOneSong = rUmultiSimUsum/simBetweenUsersSum
             calcWeightedRatingsForSongs.append(calcWeightedRatingForOneSong)
+            if firstLoopWithinNeighbors: firstLoopWithinNeighbors = False
         songsWithWeightedRatings = pd.DataFrame({'songId':songsTakenIntoRecProcessLi,'weightedRating':calcWeightedRatingsForSongs})
 
         #get five best songs recommended to user
